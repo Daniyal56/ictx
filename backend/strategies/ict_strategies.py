@@ -305,7 +305,7 @@ class ICTStrategyManager:
                         # Check for retest
                         if new_direction == TradeDirection.SHORT:
                             # Look for retest of broken support (now resistance)
-                            if retest_high >= ob.low and retest_close < ob.high:
+                            if retest_high >= ob.low and retest_price < ob.high:
                                 entry_price = ob.low
                                 stop_loss = ob.high + (ob.high - ob.low) * 0.2
                                 take_profit = [
@@ -330,7 +330,7 @@ class ICTStrategyManager:
                         
                         else:  # LONG
                             # Look for retest of broken resistance (now support)
-                            if retest_low <= ob.high and retest_close > ob.low:
+                            if retest_low <= ob.high and retest_price > ob.low:
                                 entry_price = ob.high
                                 stop_loss = ob.low - (ob.high - ob.low) * 0.2
                                 take_profit = [
@@ -775,6 +775,7 @@ class ICTStrategyManager:
                 period = f"{min(days, 365)}d"
             
             # Get data from Yahoo Finance
+            import yfinance as yf
             ticker = yf.Ticker(symbol)
             hist = ticker.history(period=period, interval=interval)
             
