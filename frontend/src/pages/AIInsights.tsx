@@ -264,11 +264,11 @@ const AIInsights: React.FC = () => {
     }
   };
 
-  const getSentimentColor = (sentiment: string) => {
+  const getSentimentColor = (sentiment: string): 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
     switch (sentiment) {
       case 'bullish': return 'success';
       case 'bearish': return 'error';
-      default: return 'default';
+      default: return 'primary';
     }
   };
 
@@ -348,7 +348,7 @@ const AIInsights: React.FC = () => {
         <Grid item xs={12} md={3}>
           <Card className="metric-card">
             <CardContent sx={{ textAlign: 'center' }}>
-              <Assessment sx={{ fontSize: 40, color="primary.main", mb: 1 }} />
+              <Assessment sx={{ fontSize: 40, color: "primary.main", mb: 1 }} />
               <Typography variant="h4" color="primary.main">
                 {recommendations.length}
               </Typography>
@@ -380,7 +380,7 @@ const AIInsights: React.FC = () => {
                           <Typography variant="h6">{sentiment.symbol}</Typography>
                           <Chip 
                             label={sentiment.sentiment.toUpperCase()}
-                            color={getSentimentColor(sentiment.sentiment) as any}
+                            color={getSentimentColor(sentiment.sentiment)}
                             size="small"
                           />
                         </Box>
@@ -402,7 +402,7 @@ const AIInsights: React.FC = () => {
                           variant="determinate" 
                           value={sentiment.confidence} 
                           sx={{ height: 8, borderRadius: 4 }}
-                          color={getSentimentColor(sentiment.sentiment) as any}
+                          color={getSentimentColor(sentiment.sentiment)}
                         />
                       </Box>
 
