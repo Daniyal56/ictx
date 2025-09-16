@@ -1,0 +1,121 @@
+# ICT Trading Concepts - Complete List
+
+## 🔹 Core ICT Concepts
+
+1. Market Structure (HH, HL, LH, LL)
+2. Liquidity (buy-side & sell-side)
+3. Liquidity Pools (equal highs/lows, trendline liquidity)
+4. Order Blocks (Bullish & Bearish)
+5. Breaker Blocks
+6. Fair Value Gaps (FVG) / Imbalances
+7. Rejection Blocks
+8. Mitigation Blocks
+9. Supply & Demand Zones
+10. Premium & Discount (Optimal Trade Entry - OTE)
+11. Dealing Ranges
+12. Swing Highs & Swing Lows
+13. Market Maker Buy & Sell Models
+14. Market Maker Sell Programs & Buy Programs
+15. Judas Swing (false breakout at sessions open)
+16. Turtle Soup (stop-hunt strategy)
+17. Power of 3 (Accumulation – Manipulation – Distribution)
+18. Optimal Trade Entry (retracement into 62%-79% zone)
+19. SMT Divergence (Smart Money Divergence across correlated pairs)
+20. Liquidity Voids / Inefficiencies
+
+## 🔹 Time & Price Theory
+
+21. Killzones (London Open, New York Open, London Close, Asia Range)
+22. Midnight Open / Session Opens (00:00, 8:30, 9:30, 13:30, etc.)
+23. Equilibrium & Fibonacci Ratios (50%, 62%, 70.5%, 79%)
+24. Daily & Weekly Range Expectations
+25. Session Liquidity Raids
+26. Weekly Profiles (Weekly Open, High, Low, Close = WHLC)
+27. Daily Bias (using daily open, previous day's high/low)
+28. Weekly Bias (using weekly OHLC)
+29. Monthly Bias (using monthly OHLC)
+30. Time of Day Highs & Lows (AM/PM session separation)
+
+## 🔹 Risk Management & Execution
+
+31. Trade Journaling & Backtesting
+32. Entry Models (FVG entry, OB entry, Breaker entry)
+33. Exit Models (partial TP, full TP, scaling out)
+34. Risk-to-Reward (RRR) optimization
+35. Position Sizing
+36. Drawdown Control
+37. Compounding Models
+38. Daily Loss Limits
+39. Probability Profiles (A+, B, C setups)
+
+## 🔹 Advanced Concepts
+
+40. High Probability Trade Scenarios (HTF bias + LTF confirmation)
+41. Liquidity Runs (stop hunts, inducement, fakeouts)
+42. Reversals vs. Continuations
+43. Accumulation & Distribution Schematics
+44. Order Flow (institutional narrative)
+45. High/Low of the Day Identification
+46. Range Expansion (daily/weekly breakouts)
+47. Inside Day / Outside Day concepts
+48. Weekly Profiles (expansion, consolidation, reversal)
+49. Interbank Price Delivery Algorithm (IPDA) theory
+50. Algo-based Price Delivery (ICT's model of market manipulation)
+
+## 🔹 Strategies / Playbooks
+
+51. ICT Silver Bullet (15-min window after NY Open)
+52. ICT Asian Range Breakout Strategy
+53. ICT New York Reversal
+54. ICT London Killzone Strategy
+55. ICT Fair Value Gap (FVG) Sniper Entry
+56. ICT Order Block Strategy
+57. ICT Breaker Block Strategy
+58. ICT Rejection Block Strategy
+59. ICT SMT Divergence Strategy
+60. ICT Turtle Soup (liquidity raid reversal)
+61. ICT Power of 3 Model (accumulation–manipulation–distribution)
+62. ICT Daily Bias + Liquidity Raid Strategy
+63. ICT AM Session Bias Strategy
+64. ICT PM Session Reversal Strategy
+65. ICT Optimal Trade Entry Strategy
+
+## Implementation Status
+
+✅ **Implemented Concepts (50+)**
+- All core market structure concepts
+- Complete liquidity analysis
+- Advanced pattern recognition
+- Time-based trading strategies
+- Risk management systems
+- AI-enhanced decision making
+- Comprehensive backtesting engine
+- Real-time market analysis
+
+## Technical Architecture
+
+### Backend Components
+- **FastAPI REST API** - High-performance async API
+- **ICT Strategy Engine** - 50+ trading concepts implementation
+- **Pattern Recognition AI** - Machine learning pattern detection
+- **Backtesting Engine** - Comprehensive performance analysis
+- **Market Data Integration** - Real-time and historical data
+- **Risk Management** - Advanced position sizing and controls
+
+### Frontend Components
+- **React Dashboard** - Modern responsive interface
+- **TradingView Charts** - Professional charting integration
+- **Real-time Updates** - WebSocket connections
+- **Performance Analytics** - Detailed backtesting results
+- **Strategy Builder** - Visual strategy configuration
+- **Portfolio Management** - Multi-asset tracking
+
+### AI & Machine Learning
+- **Pattern Recognition** - Deep learning for ICT patterns
+- **Sentiment Analysis** - Multi-source sentiment aggregation
+- **Market Regime Detection** - Adaptive strategy selection
+- **Portfolio Optimization** - AI-driven allocation
+- **Predictive Analytics** - Short-term price forecasting
+- **Anomaly Detection** - Unusual market behavior alerts
+
+This comprehensive implementation covers all major ICT concepts and provides a complete trading system with advanced AI capabilities.
