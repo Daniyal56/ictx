@@ -2,10 +2,7 @@ from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
 from datetime import datetime, timedelta
 import yfinance as yf
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from models import CandleData, TimeFrame
+from app.models import CandleData, TimeFrame
 
 router = APIRouter()
 

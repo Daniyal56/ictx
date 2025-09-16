@@ -1,14 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Dict, Any
 from datetime import datetime, timedelta
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from models import (
+from app.models import (
     TradeSetup, TradeResult, MarketAnalysis, 
     TimeFrame, TradeDirection, ICTConcept
 )
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from strategies.ict_strategies import ICTStrategyManager
 
 router = APIRouter()

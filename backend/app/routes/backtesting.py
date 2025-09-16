@@ -1,11 +1,7 @@
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from typing import List, Dict, Any
 from datetime import datetime
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from models import BacktestRequest, BacktestResult, TimeFrame
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+from app.models import BacktestRequest, BacktestResult, TimeFrame
 from backtesting.engine import BacktestEngine
 from backtesting.metrics import PerformanceMetrics
 

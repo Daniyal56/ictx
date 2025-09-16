@@ -2,8 +2,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import uvicorn
-from routes import trading, backtesting, ai_agent, market_data
-from database import init_db
+from app.routes import trading, backtesting, ai_agent, market_data
+from app.database import init_db
 
 app = FastAPI(
     title="ICT Trading AI Agent",
