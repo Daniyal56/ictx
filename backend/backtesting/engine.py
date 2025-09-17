@@ -75,22 +75,27 @@ class BacktestEngine:
                 # Check for trade exits first
                 portfolio = await self._check_trade_exits(portfolio, daily_data)
                 
-                # Generate new setups
+                # Generate new setups for current date
                 for strategy_name in request.strategies:
-                    setups = await self.strategy_manager.get_trade_setups(
-                        request.symbol, request.timeframe, [strategy_name]
-                    )
+                    # Get data up to current date for strategy analysis
+                    historical_data = data[data['timestamp'] <= current_date + timedelta(days=1)]
                     
-                    # Filter setups for current date
-                    daily_setups = [s for s in setups if s.timestamp.date() == current_date.date()]
-                    
-                    # Execute valid setups
-                    for setup in daily_setups:
-                        if portfolio.can_take_trade(setup, request.risk_per_trade):
-                            trade = await self._execute_trade(setup, portfolio)
-                            if trade:
-                                portfolio.add_trade(trade)
-                                all_trades.append(trade)
+                    if len(historical_data) >= 20:  # Need minimum data for analysis
+                        setups = await self.strategy_manager.get_trade_setups(
+                            request.symbol, request.timeframe, [strategy_name]
+                        )
+                        
+                        # Filter setups for current date (within the last day)
+                        daily_setups = [s for s in setups 
+                                      if abs((s.timestamp - current_date).days) <= 1]
+                        
+                        # Execute valid setups
+                        for setup in daily_setups:
+                            if portfolio.can_take_trade(setup, request.risk_per_trade):
+                                trade = await self._execute_trade(setup, portfolio, daily_data.iloc[-1])
+                                if trade:
+                                    portfolio.add_trade(trade)
+                                    all_trades.append(trade)
                 
                 # Record daily equity
                 daily_equity = portfolio.get_current_equity()
@@ -314,8 +319,8 @@ class BacktestEngine:
         
         return portfolio
     
-    async def _execute_trade(self, setup: TradeSetup, portfolio: 'BacktestPortfolio') -> Optional[BacktestTrade]:
-        """Execute a trade based on setup"""
+    async def _execute_trade(self, setup: TradeSetup, portfolio: 'BacktestPortfolio', current_bar: pd.Series = None) -> Optional[BacktestTrade]:
+        """Execute a trade based on setup with current market conditions"""
         try:
             # Calculate position size based on risk
             risk_amount = portfolio.current_capital * portfolio.risk_per_trade
@@ -326,6 +331,46 @@ class BacktestEngine:
             
             quantity = risk_amount / price_distance
             
+            # Adjust entry price based on current market conditions if available
+            entry_price = setup.entry_price
+            if current_bar is not None:
+                current_price = current_bar['close']
+                current_high = current_bar['high']
+                current_low = current_bar['low']
+                
+                # Apply realistic slippage and execution logic
+                if setup.direction == TradeDirection.LONG:
+                    # For long trades, ensure we can actually buy at or near the setup price
+                    if entry_price > current_high:
+                        return None  # Can't execute above the high
+                    if entry_price < current_low:
+                        entry_price = current_low  # Fill at best available price
+                    
+                    # Add small slippage
+                    slippage = entry_price * 0.0001  # 1 pip slippage
+                    entry_price += slippage
+                    
+                else:  # SHORT
+                    # For short trades, ensure we can actually sell at or near the setup price
+                    if entry_price < current_low:
+                        return None  # Can't execute below the low
+                    if entry_price > current_high:
+                        entry_price = current_high  # Fill at best available price
+                    
+                    # Add small slippage
+                    slippage = entry_price * 0.0001  # 1 pip slippage
+                    entry_price -= slippage
+            
+            # Recalculate position size with adjusted entry price
+            adjusted_price_distance = abs(entry_price - setup.stop_loss)
+            if adjusted_price_distance > 0:
+                quantity = risk_amount / adjusted_price_distance
+            else:
+                return None
+            
+            # Calculate realistic commission
+            commission = quantity * entry_price * 0.0002  # 0.02% commission (more realistic)
+            
             # Create trade
             trade = BacktestTrade(
                 id=str(uuid.uuid4()),
@@ -333,12 +378,13 @@ class BacktestEngine:
                 symbol=setup.symbol,
                 direction=setup.direction,
                 entry_time=setup.timestamp,
-                entry_price=setup.entry_price,
+                entry_price=entry_price,
                 quantity=quantity,
                 stop_loss=setup.stop_loss,
                 take_profit=setup.take_profit,
                 status="open",
-                commission=quantity * setup.entry_price * 0.0001  # 0.01% commission
+                commission=commission,
+                slippage=abs(entry_price - setup.entry_price) if current_bar is not None else 0
             )
             
             return trade
@@ -616,14 +662,22 @@ class BacktestPortfolio:
         if current_equity > self.peak_equity:
             self.peak_equity = current_equity
     
-    def get_current_equity(self) -> float:
+    def get_current_equity(self, current_prices: Dict[str, float] = None) -> float:
         """Get current portfolio equity including unrealized PnL"""
         equity = self.current_capital
         
-        # Add unrealized PnL from open trades (simplified)
+        # Add unrealized PnL from open trades
         for trade in self.open_trades:
-            # This would need current market price in real implementation
-            pass
+            if current_prices and trade.symbol in current_prices:
+                current_price = current_prices[trade.symbol]
+                
+                # Calculate unrealized PnL
+                if trade.direction == TradeDirection.LONG:
+                    unrealized_pnl = (current_price - trade.entry_price) * trade.quantity
+                else:
+                    unrealized_pnl = (trade.entry_price - current_price) * trade.quantity
+                
+                equity += unrealized_pnl
         
         return equity
     

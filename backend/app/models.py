@@ -30,6 +30,13 @@ class ICTConcept(str, Enum):
     REJECTION_BLOCK = "rejection_block"
     MITIGATION_BLOCK = "mitigation_block"
     SUPPLY_DEMAND = "supply_demand"
+    OPTIMAL_TRADE_ENTRY = "optimal_trade_entry"
+    KILLZONE = "killzone"
+    REVERSAL = "reversal"
+    TURTLE_SOUP = "turtle_soup"
+    JUDAS_SWING = "judas_swing"
+    POWER_OF_THREE = "power_of_three"
+    SMT_DIVERGENCE = "smt_divergence"
 
 # Market Data Models
 class CandleData(BaseModel):
