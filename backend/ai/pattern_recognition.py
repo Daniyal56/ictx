@@ -4,7 +4,7 @@ from typing import List, Dict, Any, Tuple
 from datetime import datetime, timedelta
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
-import cv2
+# import cv2  # Temporarily disabled for compatibility
 
 from app.models import TimeFrame, TradeDirection
 

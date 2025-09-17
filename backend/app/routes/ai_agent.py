@@ -3,13 +3,15 @@ from typing import List, Dict, Any
 from datetime import datetime
 from app.models import MarketAnalysis, AIRecommendation, TradeSetup, TimeFrame
 from ai.agent import ICTAIAgent
-from ai.pattern_recognition import PatternRecognizer
-from ai.sentiment_analyzer import SentimentAnalyzer
+# Temporarily disable AI imports for compatibility
+# from ai.pattern_recognition import PatternRecognizer
+# from ai.sentiment_analyzer import SentimentAnalyzer
 
 router = APIRouter()
 ai_agent = ICTAIAgent()
-pattern_recognizer = PatternRecognizer()
-sentiment_analyzer = SentimentAnalyzer()
+# Temporarily disable AI functionality
+# pattern_recognizer = PatternRecognizer()
+# sentiment_analyzer = SentimentAnalyzer()
 
 @router.post("/analyze", response_model=AIRecommendation)
 async def ai_market_analysis(
