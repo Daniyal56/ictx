@@ -105,6 +105,53 @@ async def get_ict_concepts():
         ]
     }
 
+@router.post("/test-strategy")
+async def test_strategy(
+    strategy: str,
+    symbol: str = "EURUSD",
+    timeframe: TimeFrame = TimeFrame.H1,
+    test_periods: int = 100
+):
+    """Test a specific ICT strategy implementation"""
+    try:
+        # Get strategy function
+        if strategy in strategy_manager.strategies:
+            # Get test data
+            data = await strategy_manager._get_market_data(symbol, timeframe, test_periods // 24)
+            
+            # Run the strategy
+            setups = await strategy_manager.strategies[strategy](data, symbol, timeframe)
+            
+            return {
+                "strategy": strategy,
+                "symbol": symbol,
+                "timeframe": timeframe,
+                "test_periods": test_periods,
+                "setups": [
+                    {
+                        "direction": setup.direction.value,
+                        "entry_price": setup.entry_price,
+                        "stop_loss": setup.stop_loss,
+                        "take_profit": setup.take_profit,
+                        "confidence": setup.confidence,
+                        "risk_reward_ratio": setup.risk_reward_ratio,
+                        "setup_type": setup.setup_type.value if hasattr(setup.setup_type, 'value') else str(setup.setup_type),
+                        "timestamp": setup.timestamp.isoformat()
+                    } for setup in setups[:10]  # Return top 10 setups
+                ],
+                "total_setups": len(setups),
+                "avg_confidence": sum(s.confidence for s in setups) / len(setups) if setups else 0,
+                "status": "success"
+            }
+        else:
+            available_strategies = list(strategy_manager.strategies.keys())
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Strategy '{strategy}' not found. Available strategies: {available_strategies[:10]}..."
+            )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Strategy test failed: {str(e)}")
+
 @router.post("/analyze")
 async def analyze_market(
     symbol: str,
