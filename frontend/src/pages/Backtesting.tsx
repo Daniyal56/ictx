@@ -18,6 +18,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TextField,
 } from '@mui/material';
 import { Line, Bar } from 'react-chartjs-2';
 import {
@@ -76,8 +77,56 @@ interface Trade {
 const Backtesting: React.FC = () => {
   const [selectedStrategy, setSelectedStrategy] = useState('order_block');
   const [selectedSymbol, setSelectedSymbol] = useState('EURUSD');
+  const [customSymbol, setCustomSymbol] = useState('');
   const [selectedTimeframe, setSelectedTimeframe] = useState('1h');
   const [isRunning, setIsRunning] = useState(false);
+  
+  // All available strategies from backend
+  const availableStrategies = [
+    'market_structure_strategy',
+    'liquidity_strategy', 
+    'order_block_strategy',
+    'breaker_block_strategy',
+    'fair_value_gap_strategy',
+    'rejection_block_strategy',
+    'mitigation_block_strategy',
+    'supply_demand_zones_strategy',
+    'premium_discount_strategy',
+    'liquidity_pools_strategy',
+    'dealing_ranges_strategy',
+    'swing_points_strategy',
+    'market_maker_models_strategy',
+    'judas_swing_strategy',
+    'turtle_soup_strategy',
+    'power_of_three_strategy',
+    'optimal_trade_entry_strategy',
+    'smt_divergence_strategy',
+    'liquidity_voids_strategy',
+    'killzones_strategy',
+    'session_opens_strategy',
+    'fibonacci_ratios_strategy',
+    'range_expectations_strategy',
+    'session_liquidity_raids_strategy',
+    'weekly_profiles_strategy',
+    'daily_bias_strategy',
+    'weekly_bias_strategy',
+    'monthly_bias_strategy',
+    'time_of_day_strategy'
+  ];
+  
+  // Available symbols
+  const availableSymbols = [
+    'EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDCHF', 'NZDUSD',
+    'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA',
+    'IRFC.NS', 'RELIANCE.NS', 'TCS.NS', 'INFY.NS', 'HDFC.NS'
+  ];
+  
+  const handleCustomSymbolAdd = () => {
+    if (customSymbol.trim() && !availableSymbols.includes(customSymbol.toUpperCase())) {
+      setSelectedSymbol(customSymbol.toUpperCase());
+      setCustomSymbol('');
+    }
+  };
   
   const [backtestResults, setBacktestResults] = useState<BacktestResult[]>([
     {
@@ -276,14 +325,43 @@ const Backtesting: React.FC = () => {
   };
 
   const strategies = [
-    { value: 'order_block', label: 'Order Block Strategy' },
-    { value: 'fair_value_gap', label: 'Fair Value Gap' },
-    { value: 'market_structure', label: 'Market Structure' },
-    { value: 'liquidity_sweep', label: 'Liquidity Sweep' },
-    { value: 'imbalance', label: 'Imbalance Strategy' },
+    // Core ICT Strategies
+    { value: 'market_structure_strategy', label: 'Market Structure Strategy' },
+    { value: 'liquidity_strategy', label: 'Liquidity Strategy' },
+    { value: 'order_block_strategy', label: 'Order Block Strategy' },
+    { value: 'breaker_block_strategy', label: 'Breaker Block Strategy' },
+    { value: 'fair_value_gap_strategy', label: 'Fair Value Gap Strategy' },
+    { value: 'rejection_block_strategy', label: 'Rejection Block Strategy' },
+    { value: 'mitigation_block_strategy', label: 'Mitigation Block Strategy' },
+    { value: 'supply_demand_zones_strategy', label: 'Supply & Demand Zones' },
+    { value: 'premium_discount_strategy', label: 'Premium Discount Strategy' },
+    { value: 'liquidity_pools_strategy', label: 'Liquidity Pools Strategy' },
+    { value: 'dealing_ranges_strategy', label: 'Dealing Ranges Strategy' },
+    { value: 'swing_points_strategy', label: 'Swing Points Strategy' },
+    { value: 'market_maker_models_strategy', label: 'Market Maker Models' },
+    { value: 'judas_swing_strategy', label: 'Judas Swing Strategy' },
+    { value: 'turtle_soup_strategy', label: 'Turtle Soup Strategy' },
+    { value: 'power_of_three_strategy', label: 'Power of Three Strategy' },
+    { value: 'optimal_trade_entry_strategy', label: 'Optimal Trade Entry' },
+    { value: 'smt_divergence_strategy', label: 'SMT Divergence Strategy' },
+    { value: 'liquidity_voids_strategy', label: 'Liquidity Voids Strategy' },
+    
+    // Time & Price Theory
+    { value: 'killzones_strategy', label: 'Killzones Strategy' },
+    { value: 'session_opens_strategy', label: 'Session Opens Strategy' },
+    { value: 'fibonacci_ratios_strategy', label: 'Fibonacci Ratios Strategy' },
+    { value: 'range_expectations_strategy', label: 'Range Expectations Strategy' },
+    { value: 'session_liquidity_raids_strategy', label: 'Session Liquidity Raids' },
+    { value: 'weekly_profiles_strategy', label: 'Weekly Profiles Strategy' },
+    { value: 'daily_bias_strategy', label: 'Daily Bias Strategy' },
+    { value: 'weekly_bias_strategy', label: 'Weekly Bias Strategy' },
+    { value: 'monthly_bias_strategy', label: 'Monthly Bias Strategy' },
+    { value: 'time_of_day_strategy', label: 'Time of Day Strategy' },
   ];
 
-  const symbols = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD'];
+  const symbols = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDCHF', 'NZDUSD',
+                   'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA',
+                   'IRFC.NS', 'RELIANCE.NS', 'TCS.NS', 'INFY.NS', 'HDFC.NS'];
   const timeframes = ['15m', '30m', '1h', '4h', '1d'];
 
   return (
@@ -329,6 +407,25 @@ const Backtesting: React.FC = () => {
                 ))}
               </Select>
             </FormControl>
+          </Grid>
+          <Grid item xs={12} md={2}>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <TextField
+                size="small"
+                placeholder="Custom Symbol"
+                value={customSymbol}
+                onChange={(e) => setCustomSymbol(e.target.value.toUpperCase())}
+                sx={{ flex: 1 }}
+              />
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={handleCustomSymbolAdd}
+                disabled={!customSymbol.trim()}
+              >
+                Add
+              </Button>
+            </Box>
           </Grid>
           <Grid item xs={12} md={2}>
             <FormControl fullWidth>

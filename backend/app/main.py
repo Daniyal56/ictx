@@ -26,7 +26,7 @@ app.add_middleware(
 app.include_router(trading.router, prefix="/api/trading", tags=["Trading"])
 app.include_router(backtesting.router, prefix="/api/backtesting", tags=["Backtesting"])
 app.include_router(ai_agent.router, prefix="/api/ai", tags=["AI Agent"])
-app.include_router(market_data.router, prefix="/api/data", tags=["Market Data"])
+app.include_router(market_data.router, prefix="/api", tags=["Market Data"])
 
 @app.on_event("startup")
 async def startup_event():

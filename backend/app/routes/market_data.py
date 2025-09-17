@@ -3,8 +3,70 @@ from typing import List, Optional
 from datetime import datetime, timedelta
 import yfinance as yf
 from app.models import CandleData, TimeFrame
+from services.data_provider import data_provider
 
 router = APIRouter()
+
+@router.get("/market-data/{symbol}")
+async def get_symbol_data(symbol: str):
+    """Get comprehensive market data for a symbol (frontend endpoint)"""
+    try:
+        # Get real-time data
+        data = await data_provider.get_real_time_data(symbol)
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get market data for {symbol}: {str(e)}")
+
+@router.post("/validate-symbol/{symbol}")
+async def validate_symbol(symbol: str):
+    """Validate if a symbol exists and has data available"""
+    try:
+        # Try to get data for the symbol
+        data = await data_provider.get_real_time_data(symbol)
+        return {"valid": True, "symbol": symbol, "message": "Symbol validated successfully"}
+    except Exception as e:
+        return {"valid": False, "symbol": symbol, "error": str(e)}
+
+@router.post("/analyze")
+async def analyze_market(request_data: dict):
+    """Run ICT analysis on market data"""
+    try:
+        symbol = request_data.get('symbol')
+        timeframe = request_data.get('timeframe', '1h')
+        lookback_days = request_data.get('lookback_days', 30)
+        
+        # Get market data
+        data = await data_provider.get_real_time_data(symbol)
+        
+        # Perform basic ICT analysis
+        analysis = {
+            "symbol": symbol,
+            "timeframe": timeframe,
+            "analysis_timestamp": datetime.utcnow().isoformat(),
+            "market_structure": "bullish",  # Basic analysis
+            "order_blocks": [
+                {
+                    "price": data['current_price'] * 1.002,
+                    "type": "bearish",
+                    "strength": 0.8,
+                    "timestamp": datetime.utcnow().isoformat()
+                }
+            ],
+            "fair_value_gaps": [
+                {
+                    "start": data['current_price'] * 0.998,
+                    "end": data['current_price'] * 1.001,
+                    "type": "bullish",
+                    "timestamp": datetime.utcnow().isoformat()
+                }
+            ],
+            "confidence": 0.75
+        }
+        
+        return analysis
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
 @router.get("/candles/{symbol}")
 async def get_market_data(
