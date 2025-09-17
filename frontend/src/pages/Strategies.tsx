@@ -689,8 +689,31 @@ const Strategies: React.FC = () => {
     setIsTestingConcept(conceptName);
     
     try {
-      // Convert concept name to strategy key
-      const strategyKey = conceptName.toLowerCase()
+      // Map concept names to actual strategy keys in backend
+      const strategyMap: {[key: string]: string} = {
+        'Market Structure (HH, HL, LH, LL)': 'market_structure_strategy',
+        'Liquidity (buy-side & sell-side)': 'liquidity_strategy',
+        'Liquidity Pools (equal highs/lows)': 'liquidity_pools_strategy',
+        'Order Blocks (Bullish & Bearish)': 'order_block_strategy',
+        'Breaker Blocks': 'breaker_block_strategy',
+        'Fair Value Gaps (FVG) / Imbalances': 'fair_value_gap_strategy',
+        'Rejection Blocks': 'rejection_block_strategy',
+        'Mitigation Blocks': 'mitigation_block_strategy',
+        'Supply & Demand Zones': 'supply_demand_zones_strategy',
+        'Premium & Discount (OTE)': 'premium_discount_strategy',
+        'Dealing Ranges': 'dealing_ranges_strategy',
+        'Swing Highs & Swing Lows': 'swing_points_strategy',
+        'Market Maker Buy & Sell Models': 'market_maker_models_strategy',
+        'Market Maker Sell & Buy Programs': 'market_maker_models_strategy',
+        'Judas Swing (false breakout)': 'judas_swing_strategy',
+        'Turtle Soup (stop-hunt strategy)': 'turtle_soup_strategy',
+        'Power of 3 (AMD)': 'power_of_three_strategy',
+        'Optimal Trade Entry (62%-79%)': 'optimal_trade_entry_strategy',
+        'SMT Divergence': 'smt_divergence_strategy',
+        'Liquidity Voids / Inefficiencies': 'liquidity_voids_strategy'
+      };
+      
+      const strategyKey = strategyMap[conceptName] || conceptName.toLowerCase()
         .replace(/\s+/g, '_')
         .replace(/[()&/-]/g, '')
         .replace(/__+/g, '_') + '_strategy';

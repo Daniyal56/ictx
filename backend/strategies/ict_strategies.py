@@ -4,7 +4,7 @@ from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime, timedelta
 from dataclasses import dataclass
 from enum import Enum
-import talib
+# import talib  # Skip for now due to compatibility issues
 
 from app.models import (
     CandleData, OrderBlock, FairValueGap, LiquidityPool,
@@ -100,8 +100,76 @@ class ICTStrategyManager:
             "optimal_trade_entry_refined_strategy": self.optimal_trade_entry_refined_strategy
         }
     
+    async def analyze_market_with_data(self, symbol: str, timeframe: TimeFrame, market_data: dict, lookback_days: int = 30) -> MarketAnalysis:
+        """Comprehensive market analysis using real market data"""
+        # Convert real market data to DataFrame format
+        data = self._convert_market_data_to_df(market_data)
+        
+        # Analyze market structure
+        market_structure = self._analyze_market_structure(data)
+        
+        # Identify key levels
+        key_levels = self._identify_key_levels(data)
+        
+        # Find order blocks
+        order_blocks = self._find_order_blocks(data)
+        
+        # Find fair value gaps
+        fair_value_gaps = self._find_fair_value_gaps(data)
+        
+        # Find liquidity pools
+        liquidity_pools = self._find_liquidity_pools(data)
+        
+        # Get current session and killzone
+        current_killzone = self.get_current_killzone()
+        
+        # Calculate sentiment and bias
+        sentiment = self._calculate_market_sentiment(data)
+        bias = self._determine_market_bias(data, market_structure)
+        
+        return MarketAnalysis(
+            symbol=symbol,
+            timeframe=timeframe,
+            timestamp=datetime.utcnow(),
+            market_structure=market_structure,
+            key_levels=key_levels,
+            order_blocks=order_blocks,
+            fair_value_gaps=fair_value_gaps,
+            liquidity_pools=liquidity_pools,
+            current_killzone=current_killzone,
+            sentiment=sentiment,
+            bias=bias,
+            confidence=self._calculate_confidence(market_structure, order_blocks, fair_value_gaps),
+            recommendations=self._generate_recommendations(symbol, market_structure, order_blocks, fair_value_gaps),
+            data_source=market_data.get('data_source', 'real'),
+            current_price=market_data.get('current_price'),
+            price_change_24h=market_data.get('price_change_24h')
+        )
+
+    def _convert_market_data_to_df(self, market_data: dict) -> pd.DataFrame:
+        """Convert market data to DataFrame for analysis"""
+        try:
+            data_list = market_data.get('data', [])
+            if not data_list:
+                raise ValueError("No market data available")
+            
+            df = pd.DataFrame(data_list)
+            df['timestamp'] = pd.to_datetime(df['timestamp'])
+            df = df.set_index('timestamp')
+            
+            # Ensure numeric columns
+            for col in ['open', 'high', 'low', 'close', 'volume']:
+                if col in df.columns:
+                    df[col] = pd.to_numeric(df[col], errors='coerce')
+            
+            return df
+        except Exception as e:
+            print(f"Error converting market data: {e}")
+            # Return empty DataFrame with required columns
+            return pd.DataFrame(columns=['open', 'high', 'low', 'close', 'volume'])
+
     async def analyze_market(self, symbol: str, timeframe: TimeFrame, lookback_days: int = 30) -> MarketAnalysis:
-        """Comprehensive market analysis using all ICT concepts"""
+        """Comprehensive market analysis using all ICT concepts (legacy method)"""
         # Get market data for analysis
         data = await self._get_market_data(symbol, timeframe, lookback_days)
         
@@ -2469,9 +2537,25 @@ class ICTStrategyManager:
     
     # Risk Management & Execution Strategies (simplified implementations)
     async def trade_journaling_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
-        """Trade Journaling Strategy"""
-        # This would typically integrate with a journaling system
-        return []
+        """Trade Journaling Strategy - Analyze historical setups for performance"""
+        setups = []
+        
+        # Get various strategy setups for analysis
+        ob_setups = await self.order_block_strategy(data, symbol, timeframe)
+        fvg_setups = await self.fair_value_gap_strategy(data, symbol, timeframe)
+        
+        # Add performance metadata for journaling
+        all_setups = ob_setups + fvg_setups
+        for setup in all_setups:
+            # Mark setups with journaling metadata
+            setup.metadata = {
+                "journal_entry": True,
+                "strategy_type": setup.setup_type.value,
+                "analysis_timestamp": datetime.utcnow()
+            }
+            setups.append(setup)
+        
+        return setups[:5]  # Limit for demonstration
     
     async def entry_models_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
         """Entry Models Strategy - FVG, OB, Breaker entries"""
@@ -2481,33 +2565,172 @@ class ICTStrategyManager:
         return fvg_setups + ob_setups + breaker_setups
     
     async def exit_models_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
-        """Exit Models Strategy"""
-        # This would typically modify existing setups with advanced exit rules
-        return []
+        """Exit Models Strategy - Advanced exit techniques (partial TP, trailing stops)"""
+        base_setups = await self.order_block_strategy(data, symbol, timeframe)
+        enhanced_setups = []
+        
+        for setup in base_setups:
+            # Enhance with advanced exit models
+            if len(setup.take_profit) < 3:
+                # Add partial take profit levels
+                entry_price = setup.entry_price
+                tp_distance = abs(setup.take_profit[0] - entry_price)
+                
+                enhanced_tp = [
+                    entry_price + (tp_distance * 0.5),  # 50% TP
+                    entry_price + (tp_distance * 1.0),  # 100% TP  
+                    entry_price + (tp_distance * 1.618) # 161.8% TP (Fibonacci extension)
+                ]
+                
+                if setup.direction == TradeDirection.SHORT:
+                    enhanced_tp = [entry_price - d for d in [tp_distance * 0.5, tp_distance * 1.0, tp_distance * 1.618]]
+                
+                setup.take_profit = enhanced_tp
+                setup.metadata = {"exit_model": "partial_tp", "tp_levels": 3}
+                
+            enhanced_setups.append(setup)
+        
+        return enhanced_setups
     
     async def risk_reward_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
-        """Risk-Reward Optimization Strategy"""
-        # This would filter setups by minimum RRR
-        return []
+        """Risk-Reward Optimization Strategy - Filter setups by minimum RRR"""
+        all_setups = []
+        
+        # Get setups from various strategies
+        ob_setups = await self.order_block_strategy(data, symbol, timeframe)
+        fvg_setups = await self.fair_value_gap_strategy(data, symbol, timeframe)
+        all_setups.extend(ob_setups + fvg_setups)
+        
+        # Filter by minimum risk-reward ratio
+        MIN_RRR = 2.0  # Minimum 1:2 risk-reward
+        high_rrr_setups = []
+        
+        for setup in all_setups:
+            if setup.risk_reward_ratio >= MIN_RRR:
+                setup.metadata = {"rrr_filter": True, "min_rrr": MIN_RRR}
+                high_rrr_setups.append(setup)
+        
+        # Sort by RRR descending
+        high_rrr_setups.sort(key=lambda x: x.risk_reward_ratio, reverse=True)
+        
+        return high_rrr_setups[:3]  # Top 3 highest RRR setups
     
     async def position_sizing_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
-        """Position Sizing Strategy"""
-        # This would calculate optimal position sizes
-        return []
+        """Position Sizing Strategy - Calculate optimal position sizes based on risk"""
+        base_setups = await self.order_block_strategy(data, symbol, timeframe)
+        
+        # Portfolio parameters
+        ACCOUNT_SIZE = 10000  # $10,000 account
+        RISK_PER_TRADE = 0.02  # 2% risk per trade
+        MAX_RISK_AMOUNT = ACCOUNT_SIZE * RISK_PER_TRADE
+        
+        sized_setups = []
+        for setup in base_setups:
+            # Calculate position size based on stop loss distance
+            risk_per_unit = abs(setup.entry_price - setup.stop_loss)
+            
+            if risk_per_unit > 0:
+                position_size = MAX_RISK_AMOUNT / risk_per_unit
+                
+                # Add position sizing metadata
+                setup.metadata = {
+                    "position_size": round(position_size, 2),
+                    "risk_amount": MAX_RISK_AMOUNT,
+                    "risk_per_unit": risk_per_unit,
+                    "account_risk_pct": RISK_PER_TRADE * 100
+                }
+                sized_setups.append(setup)
+        
+        return sized_setups
     
     async def drawdown_control_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
-        """Drawdown Control Strategy"""
-        # This would implement drawdown management
-        return []
+        """Drawdown Control Strategy - Manage maximum drawdown exposure"""
+        base_setups = await self.order_block_strategy(data, symbol, timeframe)
+        
+        # Simulate current portfolio state
+        current_drawdown = 0.05  # 5% current drawdown
+        MAX_DRAWDOWN = 0.15  # 15% maximum allowed drawdown
+        
+        controlled_setups = []
+        
+        # Only allow new setups if we're within drawdown limits
+        if current_drawdown < MAX_DRAWDOWN:
+            # Reduce position sizes during drawdown periods
+            drawdown_factor = 1 - (current_drawdown / MAX_DRAWDOWN)
+            
+            for setup in base_setups:
+                setup.metadata = {
+                    "drawdown_control": True,
+                    "current_drawdown": current_drawdown,
+                    "max_drawdown": MAX_DRAWDOWN,
+                    "position_reduction": round((1 - drawdown_factor) * 100, 1)
+                }
+                setup.confidence *= drawdown_factor  # Reduce confidence during drawdown
+                controlled_setups.append(setup)
+        
+        return controlled_setups[:2]  # Limit trades during drawdown
     
     async def compounding_models_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
-        """Compounding Models Strategy"""
-        # This would implement compounding rules
-        return []
+        """Compounding Models Strategy - Dynamic position sizing based on account growth"""
+        base_setups = await self.order_block_strategy(data, symbol, timeframe)
+        
+        # Simulate account growth
+        initial_account = 10000
+        current_account = 12500  # 25% growth
+        growth_factor = current_account / initial_account
+        
+        compounded_setups = []
+        
+        for setup in base_setups:
+            # Increase position size based on account growth
+            base_risk = 0.02  # 2% base risk
+            compounded_risk = min(base_risk * growth_factor, 0.05)  # Cap at 5%
+            
+            setup.metadata = {
+                "compounding": True,
+                "initial_account": initial_account,
+                "current_account": current_account,
+                "growth_factor": round(growth_factor, 2),
+                "base_risk": base_risk,
+                "compounded_risk": round(compounded_risk, 3)
+            }
+            
+            # Adjust confidence based on compounding success
+            setup.confidence *= min(growth_factor, 1.2)  # Bonus confidence, capped
+            compounded_setups.append(setup)
+        
+        return compounded_setups
     
     async def daily_loss_limits_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
-        """Daily Loss Limits Strategy"""
-        # This would implement daily loss limit checks
+        """Daily Loss Limits Strategy - Enforce daily loss limits"""
+        
+        # Simulate daily PnL tracking
+        daily_loss = -150  # $150 loss today
+        DAILY_LOSS_LIMIT = -200  # $200 daily loss limit
+        
+        # Only generate setups if we haven't hit daily limit
+        if daily_loss > DAILY_LOSS_LIMIT:
+            remaining_risk = abs(DAILY_LOSS_LIMIT - daily_loss)
+            
+            # Get conservative setups only
+            setups = await self.risk_reward_strategy(data, symbol, timeframe)
+            
+            # Filter to low-risk setups only
+            safe_setups = []
+            for setup in setups:
+                if setup.risk_reward_ratio >= 3.0:  # Higher RRR requirement
+                    setup.metadata = {
+                        "daily_limit_control": True,
+                        "daily_loss": daily_loss,
+                        "loss_limit": DAILY_LOSS_LIMIT,
+                        "remaining_risk": remaining_risk,
+                        "conservative_mode": True
+                    }
+                    safe_setups.append(setup)
+            
+            return safe_setups[:1]  # Only one setup near daily limit
+        
+        # Return empty if daily limit hit
         return []
     
     async def probability_profiles_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:

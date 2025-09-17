@@ -37,6 +37,16 @@ class ICTConcept(str, Enum):
     JUDAS_SWING = "judas_swing"
     POWER_OF_THREE = "power_of_three"
     SMT_DIVERGENCE = "smt_divergence"
+    INSIDE_DAY = "inside_day"
+    OUTSIDE_DAY = "outside_day"
+    IPDA_THEORY = "ipda_theory"
+    LIQUIDITY_VOIDS = "liquidity_voids"
+    MARKET_STRUCTURE = "market_structure"
+    ASIAN_RANGE = "asian_range"
+    SILVER_BULLET = "silver_bullet"
+    LONDON_KILLZONE = "london_killzone"
+    DEALING_RANGE = "dealing_range"
+    LIQUIDITY = "liquidity"
 
 # Market Data Models
 class CandleData(BaseModel):
@@ -102,6 +112,7 @@ class TradeSetup(BaseModel):
     confidence: float = Field(ge=0, le=1)
     timestamp: datetime
     timeframe: TimeFrame
+    metadata: Optional[Dict[str, Any]] = {}
 
 class TradeResult(BaseModel):
     id: Optional[str] = None

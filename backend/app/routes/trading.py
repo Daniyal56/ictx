@@ -6,6 +6,7 @@ from app.models import (
     TimeFrame, TradeDirection, ICTConcept
 )
 from strategies.ict_strategies import ICTStrategyManager
+from services.data_provider import data_provider
 
 router = APIRouter()
 strategy_manager = ICTStrategyManager()
@@ -158,12 +159,53 @@ async def analyze_market(
     timeframe: TimeFrame = TimeFrame.H1,
     lookback_days: int = 30
 ):
-    """Analyze market using ICT concepts"""
+    """Analyze market using ICT concepts with real data"""
     try:
-        analysis = await strategy_manager.analyze_market(symbol, timeframe, lookback_days)
+        # Get real market data first
+        market_data = await data_provider.get_real_time_data(symbol)
+        if not market_data:
+            raise HTTPException(status_code=404, detail=f"Unable to fetch data for symbol: {symbol}")
+        
+        # Perform ICT analysis using real data
+        analysis = await strategy_manager.analyze_market_with_data(symbol, timeframe, market_data, lookback_days)
+        
+        # Add data source information
+        analysis['data_source'] = market_data.get('data_source', 'unknown')
+        analysis['real_time_price'] = market_data.get('current_price')
+        analysis['price_change_24h'] = market_data.get('price_change_24h')
+        
         return analysis
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+
+@router.get("/market-data/{symbol}")
+async def get_market_data(symbol: str):
+    """Get real-time market data for a symbol"""
+    try:
+        data = await data_provider.get_real_time_data(symbol)
+        if not data:
+            raise HTTPException(status_code=404, detail=f"Symbol {symbol} not found")
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch data: {str(e)}")
+
+@router.get("/search-symbols/{query}")
+async def search_symbols(query: str):
+    """Search for symbols"""
+    try:
+        results = await data_provider.search_symbols(query)
+        return {"symbols": results}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+
+@router.post("/validate-symbol/{symbol}")
+async def validate_symbol(symbol: str):
+    """Validate if a symbol exists and can be traded"""
+    try:
+        is_valid = await data_provider.validate_symbol(symbol)
+        return {"symbol": symbol, "valid": is_valid}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Validation failed: {str(e)}")
 
 @router.post("/setups")
 async def get_trade_setups(
