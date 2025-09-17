@@ -95,8 +95,19 @@ class RealDataProvider:
         """Enhanced fallback using yfinance for real market data"""
         try:
             import yfinance as yf
-            ticker = yf.Ticker(symbol)
+            
+            # Format symbol for yfinance
+            formatted_symbol = self._format_symbol_for_yfinance(symbol)
+            
+            ticker = yf.Ticker(formatted_symbol)
             hist = ticker.history(period="5d", interval="1m")
+            
+            if hist.empty:
+                # Try alternative formatting
+                alt_symbol = self._get_alternative_symbol_format(symbol)
+                if alt_symbol != formatted_symbol:
+                    ticker = yf.Ticker(alt_symbol)
+                    hist = ticker.history(period="5d", interval="1m")
             
             if hist.empty:
                 raise Exception(f"No data available for symbol {symbol}")
@@ -124,12 +135,39 @@ class RealDataProvider:
                 'price_change_24h': ((ohlcv_data[-1]['close'] - ohlcv_data[0]['close']) / ohlcv_data[0]['close']) * 100,
                 'data_source': 'yfinance',
                 'timestamp': current_time.isoformat(),
-                'disclaimer': 'Real market data via yfinance'
+                'disclaimer': 'Real market data via Yahoo Finance'
             }
             
         except Exception as e:
-            print(f"Real data fallback failed for {symbol}: {e}")
-            raise Exception(f"Unable to fetch real market data for {symbol}. Please verify symbol format and connectivity.")
+            print(f"Enhanced yfinance failed for {symbol}: {e}")
+            raise Exception(f"Unable to fetch real market data for {symbol}: {str(e)}")
+    
+    def _format_symbol_for_yfinance(self, symbol: str) -> str:
+        """Format symbol for Yahoo Finance"""
+        # Forex pairs
+        forex_map = {
+            'EURUSD': 'EURUSD=X',
+            'GBPUSD': 'GBPUSD=X',
+            'USDJPY': 'USDJPY=X',
+            'AUDUSD': 'AUDUSD=X',
+            'USDCAD': 'USDCAD=X',
+            'USDCHF': 'USDCHF=X',
+            'NZDUSD': 'NZDUSD=X'
+        }
+        
+        if symbol in forex_map:
+            return forex_map[symbol]
+        
+        # Stocks - use as is
+        return symbol
+    
+    def _get_alternative_symbol_format(self, symbol: str) -> str:
+        """Get alternative symbol formats"""
+        if symbol.endswith('=X'):
+            return symbol[:-2]  # Remove =X
+        elif symbol in ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDCHF', 'NZDUSD']:
+            return f"{symbol}=X"  # Add =X
+        return symbol
     
     def _format_symbol_for_alpha_vantage(self, symbol: str) -> str:
         """Format symbol for Alpha Vantage API"""
@@ -145,15 +183,7 @@ class RealDataProvider:
     
     def _format_symbol_for_yahoo(self, symbol: str) -> str:
         """Format symbol for Yahoo Finance"""
-        if '.NS' in symbol:
-            # Indian stocks already have correct format
-            return symbol
-        elif symbol in ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD']:
-            # Forex pairs need =X suffix for Yahoo
-            return f"{symbol}=X"
-        else:
-            # US stocks
-            return symbol
+        return self._format_symbol_for_yfinance(symbol)
     
     def _get_realistic_base_price(self, symbol: str) -> float:
         """Get realistic base prices for different symbols"""
