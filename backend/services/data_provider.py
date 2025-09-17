@@ -92,52 +92,82 @@ class RealDataProvider:
         return None
     
     async def _get_fallback_data(self, symbol: str) -> Dict[str, Any]:
-        """Fallback to realistic simulated data with disclaimer"""
-        print(f"Using simulated data for {symbol} - Real API integration required for production")
-        
-        # Generate realistic market data based on symbol type
-        base_price = self._get_realistic_base_price(symbol)
-        current_time = datetime.utcnow()
-        
-        # Generate OHLCV data for last 100 periods
-        ohlcv_data = []
-        price = base_price
-        
-        for i in range(100, 0, -1):
-            timestamp = current_time - timedelta(minutes=i)
+        """Enhanced fallback using yfinance for real market data"""
+        try:
+            import yfinance as yf
             
-            # Realistic price movement (0.1% to 0.5% per minute)
-            change_percent = (np.random.random() - 0.5) * 0.01  # ±0.5%
-            open_price = price
-            close_price = price * (1 + change_percent)
+            # Format symbol for yfinance
+            formatted_symbol = self._format_symbol_for_yfinance(symbol)
             
-            # Calculate high/low with realistic spreads
-            spread = price * 0.001  # 0.1% spread
-            high_price = max(open_price, close_price) + spread * np.random.random()
-            low_price = min(open_price, close_price) - spread * np.random.random()
+            ticker = yf.Ticker(formatted_symbol)
+            hist = ticker.history(period="5d", interval="1m")
             
-            volume = int(np.random.exponential(100000))  # Realistic volume distribution
+            if hist.empty:
+                # Try alternative formatting
+                alt_symbol = self._get_alternative_symbol_format(symbol)
+                if alt_symbol != formatted_symbol:
+                    ticker = yf.Ticker(alt_symbol)
+                    hist = ticker.history(period="5d", interval="1m")
             
-            ohlcv_data.append({
-                'timestamp': timestamp.isoformat(),
-                'open': round(open_price, self._get_price_decimals(symbol)),
-                'high': round(high_price, self._get_price_decimals(symbol)),
-                'low': round(low_price, self._get_price_decimals(symbol)),
-                'close': round(close_price, self._get_price_decimals(symbol)),
-                'volume': volume
-            })
+            if hist.empty:
+                raise Exception(f"No data available for symbol {symbol}")
             
-            price = close_price
-        
-        return {
-            'symbol': symbol,
-            'data': ohlcv_data,
-            'current_price': ohlcv_data[-1]['close'],
-            'price_change_24h': ((ohlcv_data[-1]['close'] - ohlcv_data[0]['close']) / ohlcv_data[0]['close']) * 100,
-            'data_source': 'simulated',
-            'timestamp': current_time.isoformat(),
-            'disclaimer': 'Simulated data - Connect real API for production use'
+            current_time = datetime.utcnow()
+            ohlcv_data = []
+            
+            for timestamp, row in hist.iterrows():
+                ohlcv_data.append({
+                    'timestamp': timestamp.isoformat(),
+                    'open': round(float(row['Open']), self._get_price_decimals(symbol)),
+                    'high': round(float(row['High']), self._get_price_decimals(symbol)),
+                    'low': round(float(row['Low']), self._get_price_decimals(symbol)),
+                    'close': round(float(row['Close']), self._get_price_decimals(symbol)),
+                    'volume': int(row['Volume'])
+                })
+            
+            if not ohlcv_data:
+                raise Exception(f"No valid data points for {symbol}")
+            
+            return {
+                'symbol': symbol,
+                'data': ohlcv_data,
+                'current_price': ohlcv_data[-1]['close'],
+                'price_change_24h': ((ohlcv_data[-1]['close'] - ohlcv_data[0]['close']) / ohlcv_data[0]['close']) * 100,
+                'data_source': 'yfinance',
+                'timestamp': current_time.isoformat(),
+                'disclaimer': 'Real market data via Yahoo Finance'
+            }
+            
+        except Exception as e:
+            print(f"Enhanced yfinance failed for {symbol}: {e}")
+            raise Exception(f"Unable to fetch real market data for {symbol}: {str(e)}")
+    
+    def _format_symbol_for_yfinance(self, symbol: str) -> str:
+        """Format symbol for Yahoo Finance"""
+        # Forex pairs
+        forex_map = {
+            'EURUSD': 'EURUSD=X',
+            'GBPUSD': 'GBPUSD=X',
+            'USDJPY': 'USDJPY=X',
+            'AUDUSD': 'AUDUSD=X',
+            'USDCAD': 'USDCAD=X',
+            'USDCHF': 'USDCHF=X',
+            'NZDUSD': 'NZDUSD=X'
         }
+        
+        if symbol in forex_map:
+            return forex_map[symbol]
+        
+        # Stocks - use as is
+        return symbol
+    
+    def _get_alternative_symbol_format(self, symbol: str) -> str:
+        """Get alternative symbol formats"""
+        if symbol.endswith('=X'):
+            return symbol[:-2]  # Remove =X
+        elif symbol in ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDCHF', 'NZDUSD']:
+            return f"{symbol}=X"  # Add =X
+        return symbol
     
     def _format_symbol_for_alpha_vantage(self, symbol: str) -> str:
         """Format symbol for Alpha Vantage API"""
@@ -153,15 +183,7 @@ class RealDataProvider:
     
     def _format_symbol_for_yahoo(self, symbol: str) -> str:
         """Format symbol for Yahoo Finance"""
-        if '.NS' in symbol:
-            # Indian stocks already have correct format
-            return symbol
-        elif symbol in ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD']:
-            # Forex pairs need =X suffix for Yahoo
-            return f"{symbol}=X"
-        else:
-            # US stocks
-            return symbol
+        return self._format_symbol_for_yfinance(symbol)
     
     def _get_realistic_base_price(self, symbol: str) -> float:
         """Get realistic base prices for different symbols"""

@@ -1655,8 +1655,8 @@ class ICTStrategyManager:
             hist = ticker.history(period=period, interval=interval)
             
             if hist.empty:
-                # Fallback to mock data if real data unavailable
-                return self._generate_mock_data(symbol, timeframe, days)
+                # Try alternative symbol formats or raise error for invalid symbols
+                raise ValueError(f"No market data available for symbol {symbol}. Please verify symbol format.")
             
             # Convert to our DataFrame format
             data = pd.DataFrame({
@@ -1675,86 +1675,25 @@ class ICTStrategyManager:
             
         except Exception as e:
             print(f"Error fetching market data for {symbol}: {str(e)}")
-            # Fallback to mock data
-            return self._generate_mock_data(symbol, timeframe, days)
+            # Return error instead of mock data
+            raise ValueError(f"Cannot fetch real market data for {symbol}: {str(e)}")
     
-    def _generate_mock_data(self, symbol: str, timeframe: TimeFrame, days: int) -> pd.DataFrame:
-        """Generate mock data as fallback"""
-        # Calculate periods based on timeframe
-        periods_per_day = {
-            TimeFrame.M1: 1440,
-            TimeFrame.M5: 288,
-            TimeFrame.M15: 96,
-            TimeFrame.M30: 48,
-            TimeFrame.H1: 24,
-            TimeFrame.H4: 6,
-            TimeFrame.D1: 1
+    def _validate_symbol_format(self, symbol: str) -> str:
+        """Validate and format symbol for data providers"""
+        # Common symbol format corrections
+        symbol_map = {
+            'EURUSD': 'EURUSD=X',
+            'GBPUSD': 'GBPUSD=X', 
+            'USDJPY': 'USDJPY=X',
+            'AUDUSD': 'AUDUSD=X',
+            'USDCAD': 'USDCAD=X',
+            'USDCHF': 'USDCHF=X',
+            'NZDUSD': 'NZDUSD=X'
         }
         
-        periods = days * periods_per_day.get(timeframe, 24)
-        dates = pd.date_range(end=datetime.utcnow(), periods=periods, freq='H')
-        
-        # Use consistent seed for reproducible data
-        np.random.seed(hash(symbol) % 1000)
-        
-        # Base prices for different symbols
-        base_prices = {
-            'EURUSD': 1.1000,
-            'GBPUSD': 1.2500,
-            'USDJPY': 110.00,
-            'AUDUSD': 0.7500,
-            'USDCAD': 1.2500,
-            'USDCHF': 0.9200,
-            'NZDUSD': 0.7000,
-            'AAPL': 150.00,
-            'MSFT': 300.00,
-            'GOOGL': 2500.00,
-            'AMZN': 3200.00,
-            'TSLA': 800.00
-        }
-        
-        base_price = base_prices.get(symbol, 100.00)
-        
-        # Generate realistic price movements
-        prices = []
-        current_price = base_price
-        
-        for i in range(len(dates)):
-            # Add some trend and noise
-            trend = 0.001 * np.sin(i / periods * 4 * np.pi)  # Long-term cycles
-            noise = np.random.normal(0, 0.002)  # Short-term noise
-            
-            # Mean reversion
-            reversion = -0.1 * (current_price - base_price) / base_price
-            
-            change = trend + noise + reversion
-            current_price = current_price * (1 + change)
-            prices.append(current_price)
-        
-        # Generate OHLC data
-        data = []
-        for i, price in enumerate(prices):
-            # Generate realistic OHLC
-            daily_range = price * np.random.uniform(0.005, 0.02)  # 0.5-2% daily range
-            
-            open_price = price + np.random.uniform(-daily_range/2, daily_range/2)
-            high_price = max(open_price, price) + np.random.uniform(0, daily_range/2)
-            low_price = min(open_price, price) - np.random.uniform(0, daily_range/2)
-            close_price = price + np.random.uniform(-daily_range/4, daily_range/4)
-            
-            volume = np.random.randint(10000, 100000)
-            
-            data.append({
-                'timestamp': dates[i],
-                'open': open_price,
-                'high': high_price,
-                'low': low_price,
-                'close': close_price,
-                'volume': volume
-            })
-        
-        return pd.DataFrame(data)
+        return symbol_map.get(symbol, symbol)
     
+
     def _analyze_market_structure(self, data: pd.DataFrame) -> MarketStructure:
         """Analyze market structure"""
         # Simplified implementation
