@@ -100,8 +100,76 @@ class ICTStrategyManager:
             "optimal_trade_entry_refined_strategy": self.optimal_trade_entry_refined_strategy
         }
     
+    async def analyze_market_with_data(self, symbol: str, timeframe: TimeFrame, market_data: dict, lookback_days: int = 30) -> MarketAnalysis:
+        """Comprehensive market analysis using real market data"""
+        # Convert real market data to DataFrame format
+        data = self._convert_market_data_to_df(market_data)
+        
+        # Analyze market structure
+        market_structure = self._analyze_market_structure(data)
+        
+        # Identify key levels
+        key_levels = self._identify_key_levels(data)
+        
+        # Find order blocks
+        order_blocks = self._find_order_blocks(data)
+        
+        # Find fair value gaps
+        fair_value_gaps = self._find_fair_value_gaps(data)
+        
+        # Find liquidity pools
+        liquidity_pools = self._find_liquidity_pools(data)
+        
+        # Get current session and killzone
+        current_killzone = self.get_current_killzone()
+        
+        # Calculate sentiment and bias
+        sentiment = self._calculate_market_sentiment(data)
+        bias = self._determine_market_bias(data, market_structure)
+        
+        return MarketAnalysis(
+            symbol=symbol,
+            timeframe=timeframe,
+            timestamp=datetime.utcnow(),
+            market_structure=market_structure,
+            key_levels=key_levels,
+            order_blocks=order_blocks,
+            fair_value_gaps=fair_value_gaps,
+            liquidity_pools=liquidity_pools,
+            current_killzone=current_killzone,
+            sentiment=sentiment,
+            bias=bias,
+            confidence=self._calculate_confidence(market_structure, order_blocks, fair_value_gaps),
+            recommendations=self._generate_recommendations(symbol, market_structure, order_blocks, fair_value_gaps),
+            data_source=market_data.get('data_source', 'real'),
+            current_price=market_data.get('current_price'),
+            price_change_24h=market_data.get('price_change_24h')
+        )
+
+    def _convert_market_data_to_df(self, market_data: dict) -> pd.DataFrame:
+        """Convert market data to DataFrame for analysis"""
+        try:
+            data_list = market_data.get('data', [])
+            if not data_list:
+                raise ValueError("No market data available")
+            
+            df = pd.DataFrame(data_list)
+            df['timestamp'] = pd.to_datetime(df['timestamp'])
+            df = df.set_index('timestamp')
+            
+            # Ensure numeric columns
+            for col in ['open', 'high', 'low', 'close', 'volume']:
+                if col in df.columns:
+                    df[col] = pd.to_numeric(df[col], errors='coerce')
+            
+            return df
+        except Exception as e:
+            print(f"Error converting market data: {e}")
+            # Return empty DataFrame with required columns
+            return pd.DataFrame(columns=['open', 'high', 'low', 'close', 'volume'])
+
     async def analyze_market(self, symbol: str, timeframe: TimeFrame, lookback_days: int = 30) -> MarketAnalysis:
-        """Comprehensive market analysis using all ICT concepts"""
+        """Comprehensive market analysis using all ICT concepts (legacy method)"""
         # Get market data for analysis
         data = await self._get_market_data(symbol, timeframe, lookback_days)
         
