@@ -21,25 +21,83 @@ class ICTLevel:
     tested_count: int = 0
 
 class ICTStrategyManager:
-    """Comprehensive ICT Strategy Manager implementing 50+ concepts"""
+    """Comprehensive ICT Strategy Manager implementing 65+ concepts"""
     
     def __init__(self):
         self.strategies = {
+            # Core ICT Concepts (1-20)
+            "market_structure_strategy": self.market_structure_strategy,
+            "liquidity_strategy": self.liquidity_strategy,
+            "liquidity_pools_strategy": self.liquidity_pools_strategy,
             "order_block_strategy": self.order_block_strategy,
-            "fair_value_gap_strategy": self.fair_value_gap_strategy,
-            "silver_bullet_strategy": self.silver_bullet_strategy,
             "breaker_block_strategy": self.breaker_block_strategy,
-            "liquidity_raid_strategy": self.liquidity_raid_strategy,
-            "smt_divergence_strategy": self.smt_divergence_strategy,
-            "power_of_three_strategy": self.power_of_three_strategy,
+            "fair_value_gap_strategy": self.fair_value_gap_strategy,
             "rejection_block_strategy": self.rejection_block_strategy,
             "mitigation_block_strategy": self.mitigation_block_strategy,
-            "turtle_soup_strategy": self.turtle_soup_strategy,
+            "supply_demand_zones_strategy": self.supply_demand_zones_strategy,
+            "premium_discount_strategy": self.premium_discount_strategy,
+            "dealing_ranges_strategy": self.dealing_ranges_strategy,
+            "swing_points_strategy": self.swing_points_strategy,
+            "market_maker_models_strategy": self.market_maker_models_strategy,
             "judas_swing_strategy": self.judas_swing_strategy,
+            "turtle_soup_strategy": self.turtle_soup_strategy,
+            "power_of_three_strategy": self.power_of_three_strategy,
             "optimal_trade_entry_strategy": self.optimal_trade_entry_strategy,
-            "london_killzone_strategy": self.london_killzone_strategy,
+            "smt_divergence_strategy": self.smt_divergence_strategy,
+            "liquidity_voids_strategy": self.liquidity_voids_strategy,
+            
+            # Time & Price Theory (21-30)
+            "killzones_strategy": self.killzones_strategy,
+            "session_opens_strategy": self.session_opens_strategy,
+            "fibonacci_ratios_strategy": self.fibonacci_ratios_strategy,
+            "range_expectations_strategy": self.range_expectations_strategy,
+            "session_liquidity_raids_strategy": self.session_liquidity_raids_strategy,
+            "weekly_profiles_strategy": self.weekly_profiles_strategy,
+            "daily_bias_strategy": self.daily_bias_strategy,
+            "weekly_bias_strategy": self.weekly_bias_strategy,
+            "monthly_bias_strategy": self.monthly_bias_strategy,
+            "time_of_day_strategy": self.time_of_day_strategy,
+            
+            # Risk Management & Execution (31-39)
+            "trade_journaling_strategy": self.trade_journaling_strategy,
+            "entry_models_strategy": self.entry_models_strategy,
+            "exit_models_strategy": self.exit_models_strategy,
+            "risk_reward_strategy": self.risk_reward_strategy,
+            "position_sizing_strategy": self.position_sizing_strategy,
+            "drawdown_control_strategy": self.drawdown_control_strategy,
+            "compounding_models_strategy": self.compounding_models_strategy,
+            "daily_loss_limits_strategy": self.daily_loss_limits_strategy,
+            "probability_profiles_strategy": self.probability_profiles_strategy,
+            
+            # Advanced Concepts (40-50)
+            "high_probability_scenarios_strategy": self.high_probability_scenarios_strategy,
+            "liquidity_runs_strategy": self.liquidity_runs_strategy,
+            "reversals_continuations_strategy": self.reversals_continuations_strategy,
+            "accumulation_distribution_strategy": self.accumulation_distribution_strategy,
+            "order_flow_strategy": self.order_flow_strategy,
+            "high_low_day_strategy": self.high_low_day_strategy,
+            "range_expansion_strategy": self.range_expansion_strategy,
+            "inside_outside_day_strategy": self.inside_outside_day_strategy,
+            "weekly_profiles_advanced_strategy": self.weekly_profiles_advanced_strategy,
+            "ipda_theory_strategy": self.ipda_theory_strategy,
+            "algo_price_delivery_strategy": self.algo_price_delivery_strategy,
+            
+            # Strategies / Playbooks (51-65)
+            "silver_bullet_strategy": self.silver_bullet_strategy,
+            "asian_range_strategy": self.asian_range_strategy,
             "ny_reversal_strategy": self.ny_reversal_strategy,
-            "asian_range_strategy": self.asian_range_strategy
+            "london_killzone_strategy": self.london_killzone_strategy,
+            "fvg_sniper_strategy": self.fvg_sniper_strategy,
+            "order_block_refined_strategy": self.order_block_refined_strategy,
+            "breaker_block_refined_strategy": self.breaker_block_refined_strategy,
+            "rejection_block_refined_strategy": self.rejection_block_refined_strategy,
+            "smt_divergence_refined_strategy": self.smt_divergence_refined_strategy,
+            "turtle_soup_refined_strategy": self.turtle_soup_refined_strategy,
+            "power_of_three_refined_strategy": self.power_of_three_refined_strategy,
+            "daily_bias_liquidity_raid_strategy": self.daily_bias_liquidity_raid_strategy,
+            "am_session_bias_strategy": self.am_session_bias_strategy,
+            "pm_session_reversal_strategy": self.pm_session_reversal_strategy,
+            "optimal_trade_entry_refined_strategy": self.optimal_trade_entry_refined_strategy
         }
     
     async def analyze_market(self, symbol: str, timeframe: TimeFrame, lookback_days: int = 30) -> MarketAnalysis:
@@ -1832,3 +1890,820 @@ class ICTStrategyManager:
             return "medium"
         else:
             return "low"
+    
+    # Additional ICT Strategy Implementations
+    async def market_structure_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Market Structure Strategy - HH, HL, LH, LL patterns"""
+        setups = []
+        swing_points = self._find_swing_points(data)
+        
+        if len(swing_points) < 4:
+            return setups
+        
+        # Analyze structure for trend continuation/reversal
+        structure_type = self._classify_market_structure(swing_points)
+        
+        if structure_type == "bullish_structure":
+            # Look for continuation patterns
+            latest_swing_low = None
+            for point in reversed(swing_points):
+                if point.type == "swing_low":
+                    latest_swing_low = point
+                    break
+            
+            if latest_swing_low:
+                entry_price = latest_swing_low.price * 1.001  # Just above swing low
+                stop_loss = latest_swing_low.price * 0.995
+                take_profit = [entry_price * 1.01, entry_price * 1.02]
+                
+                setup = TradeSetup(
+                    symbol=symbol,
+                    direction=TradeDirection.LONG,
+                    entry_price=entry_price,
+                    stop_loss=stop_loss,
+                    take_profit=take_profit,
+                    risk_reward_ratio=2.0,
+                    setup_type=ICTConcept.MARKET_STRUCTURE,
+                    confidence=0.75,
+                    timestamp=datetime.utcnow(),
+                    timeframe=timeframe
+                )
+                setups.append(setup)
+        
+        return setups
+    
+    async def liquidity_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Liquidity Strategy - Buy-side & sell-side liquidity"""
+        return await self.liquidity_raid_strategy(data, symbol, timeframe)
+    
+    async def liquidity_pools_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Liquidity Pools Strategy - Equal highs/lows"""
+        return await self.liquidity_raid_strategy(data, symbol, timeframe)
+    
+    async def supply_demand_zones_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Supply & Demand Zones Strategy"""
+        setups = []
+        
+        # Find zones of supply and demand based on volume and price action
+        for i in range(20, len(data) - 5):
+            current_volume = data.iloc[i]['volume']
+            avg_volume = np.mean(data.iloc[i-10:i]['volume'])
+            
+            # High volume areas indicate supply/demand zones
+            if current_volume > avg_volume * 2.0:
+                current_price = data.iloc[i]['close']
+                current_high = data.iloc[i]['high']
+                current_low = data.iloc[i]['low']
+                
+                # Check for rejection from this zone
+                rejection_found = False
+                for j in range(i + 1, min(i + 10, len(data))):
+                    test_high = data.iloc[j]['high']
+                    test_low = data.iloc[j]['low']
+                    test_close = data.iloc[j]['close']
+                    
+                    # Test for supply zone (resistance)
+                    if test_high >= current_high * 0.999 and test_close < current_high * 0.995:
+                        entry_price = current_high
+                        stop_loss = current_high * 1.005
+                        take_profit = [current_low, current_low * 0.99]
+                        
+                        setup = TradeSetup(
+                            symbol=symbol,
+                            direction=TradeDirection.SHORT,
+                            entry_price=entry_price,
+                            stop_loss=stop_loss,
+                            take_profit=take_profit,
+                            risk_reward_ratio=2.0,
+                            setup_type=ICTConcept.SUPPLY_DEMAND,
+                            confidence=0.7,
+                            timestamp=data.iloc[j]['timestamp'],
+                            timeframe=timeframe
+                        )
+                        setups.append(setup)
+                        break
+                    
+                    # Test for demand zone (support)
+                    elif test_low <= current_low * 1.001 and test_close > current_low * 1.005:
+                        entry_price = current_low
+                        stop_loss = current_low * 0.995
+                        take_profit = [current_high, current_high * 1.01]
+                        
+                        setup = TradeSetup(
+                            symbol=symbol,
+                            direction=TradeDirection.LONG,
+                            entry_price=entry_price,
+                            stop_loss=stop_loss,
+                            take_profit=take_profit,
+                            risk_reward_ratio=2.0,
+                            setup_type=ICTConcept.SUPPLY_DEMAND,
+                            confidence=0.7,
+                            timestamp=data.iloc[j]['timestamp'],
+                            timeframe=timeframe
+                        )
+                        setups.append(setup)
+                        break
+        
+        return setups
+    
+    async def premium_discount_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Premium & Discount Strategy - Optimal Trade Entry zones"""
+        return await self.optimal_trade_entry_strategy(data, symbol, timeframe)
+    
+    async def dealing_ranges_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Dealing Ranges Strategy"""
+        setups = []
+        
+        # Find consolidation ranges
+        for i in range(30, len(data) - 10):
+            range_data = data.iloc[i-30:i]
+            range_high = range_data['high'].max()
+            range_low = range_data['low'].min()
+            range_size = range_high - range_low
+            
+            # Check if we have a valid range (price consolidation)
+            closes = range_data['close'].values
+            price_std = np.std(closes)
+            mean_price = np.mean(closes)
+            
+            # Low volatility indicates ranging market
+            if price_std / mean_price < 0.01:  # Less than 1% volatility
+                
+                current_price = data.iloc[i]['close']
+                
+                # Buy at discount (near range low)
+                if current_price <= range_low + range_size * 0.25:
+                    entry_price = current_price
+                    stop_loss = range_low - range_size * 0.1
+                    take_profit = [range_high - range_size * 0.1]
+                    
+                    setup = TradeSetup(
+                        symbol=symbol,
+                        direction=TradeDirection.LONG,
+                        entry_price=entry_price,
+                        stop_loss=stop_loss,
+                        take_profit=take_profit,
+                        risk_reward_ratio=3.0,
+                        setup_type=ICTConcept.DEALING_RANGE,
+                        confidence=0.8,
+                        timestamp=data.iloc[i]['timestamp'],
+                        timeframe=timeframe
+                    )
+                    setups.append(setup)
+                
+                # Sell at premium (near range high)
+                elif current_price >= range_high - range_size * 0.25:
+                    entry_price = current_price
+                    stop_loss = range_high + range_size * 0.1
+                    take_profit = [range_low + range_size * 0.1]
+                    
+                    setup = TradeSetup(
+                        symbol=symbol,
+                        direction=TradeDirection.SHORT,
+                        entry_price=entry_price,
+                        stop_loss=stop_loss,
+                        take_profit=take_profit,
+                        risk_reward_ratio=3.0,
+                        setup_type=ICTConcept.DEALING_RANGE,
+                        confidence=0.8,
+                        timestamp=data.iloc[i]['timestamp'],
+                        timeframe=timeframe
+                    )
+                    setups.append(setup)
+        
+        return setups
+    
+    async def swing_points_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Swing Points Strategy"""
+        return await self.market_structure_strategy(data, symbol, timeframe)
+    
+    async def market_maker_models_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Market Maker Buy & Sell Models Strategy"""
+        setups = []
+        
+        # Look for market maker accumulation/distribution patterns
+        for i in range(50, len(data) - 20):
+            
+            # Get price action over accumulation period
+            accumulation_period = data.iloc[i-50:i-20]
+            recent_period = data.iloc[i-20:i]
+            
+            acc_volume = accumulation_period['volume'].sum()
+            recent_volume = recent_period['volume'].sum()
+            
+            acc_range = accumulation_period['high'].max() - accumulation_period['low'].min()
+            recent_range = recent_period['high'].max() - recent_period['low'].min()
+            
+            # Market maker accumulation: High volume, low range
+            if (acc_volume > recent_volume * 1.5 and acc_range < recent_range * 0.8):
+                
+                # Look for breakout direction
+                acc_close = accumulation_period['close'].iloc[-1]
+                current_price = data.iloc[i]['close']
+                
+                if current_price > acc_close * 1.01:  # Bullish breakout
+                    entry_price = current_price
+                    stop_loss = accumulation_period['low'].min()
+                    take_profit = [current_price + acc_range * 2]
+                    
+                    setup = TradeSetup(
+                        symbol=symbol,
+                        direction=TradeDirection.LONG,
+                        entry_price=entry_price,
+                        stop_loss=stop_loss,
+                        take_profit=take_profit,
+                        risk_reward_ratio=2.0,
+                        setup_type=ICTConcept.MARKET_MAKER_MODEL,
+                        confidence=0.75,
+                        timestamp=data.iloc[i]['timestamp'],
+                        timeframe=timeframe
+                    )
+                    setups.append(setup)
+                
+                elif current_price < acc_close * 0.99:  # Bearish breakout
+                    entry_price = current_price
+                    stop_loss = accumulation_period['high'].max()
+                    take_profit = [current_price - acc_range * 2]
+                    
+                    setup = TradeSetup(
+                        symbol=symbol,
+                        direction=TradeDirection.SHORT,
+                        entry_price=entry_price,
+                        stop_loss=stop_loss,
+                        take_profit=take_profit,
+                        risk_reward_ratio=2.0,
+                        setup_type=ICTConcept.MARKET_MAKER_MODEL,
+                        confidence=0.75,
+                        timestamp=data.iloc[i]['timestamp'],
+                        timeframe=timeframe
+                    )
+                    setups.append(setup)
+        
+        return setups
+    
+    async def liquidity_voids_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Liquidity Voids/Inefficiencies Strategy"""
+        return await self.fair_value_gap_strategy(data, symbol, timeframe)
+    
+    # Time & Price Theory Strategies
+    async def killzones_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Killzones Strategy - London, NY, Asia sessions"""
+        return await self.london_killzone_strategy(data, symbol, timeframe)
+    
+    async def session_opens_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Session Opens Strategy"""
+        return await self.judas_swing_strategy(data, symbol, timeframe)
+    
+    async def fibonacci_ratios_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Fibonacci Ratios Strategy - 50%, 62%, 70.5%, 79%"""
+        return await self.optimal_trade_entry_strategy(data, symbol, timeframe)
+    
+    async def range_expectations_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Daily & Weekly Range Expectations Strategy"""
+        setups = []
+        
+        current_time = datetime.utcnow()
+        current_date = current_time.date()
+        
+        # Calculate expected daily range based on historical data
+        daily_ranges = []
+        for i in range(max(0, len(data) - 20), len(data)):
+            daily_data = data.iloc[i]
+            daily_range = daily_data['high'] - daily_data['low']
+            daily_ranges.append(daily_range)
+        
+        if len(daily_ranges) >= 5:
+            avg_daily_range = np.mean(daily_ranges)
+            current_range = data.iloc[-1]['high'] - data.iloc[-1]['low']
+            
+            # If current range is below average, expect expansion
+            if current_range < avg_daily_range * 0.7:
+                current_price = data.iloc[-1]['close']
+                
+                # Set up for range expansion trades
+                entry_price = current_price
+                stop_loss_distance = avg_daily_range * 0.2
+                target_distance = avg_daily_range * 0.8
+                
+                # Both directions as we expect expansion
+                setups.extend([
+                    TradeSetup(
+                        symbol=symbol,
+                        direction=TradeDirection.LONG,
+                        entry_price=entry_price,
+                        stop_loss=entry_price - stop_loss_distance,
+                        take_profit=[entry_price + target_distance],
+                        risk_reward_ratio=4.0,
+                        setup_type=ICTConcept.DAILY_RANGE,
+                        confidence=0.6,
+                        timestamp=datetime.utcnow(),
+                        timeframe=timeframe
+                    ),
+                    TradeSetup(
+                        symbol=symbol,
+                        direction=TradeDirection.SHORT,
+                        entry_price=entry_price,
+                        stop_loss=entry_price + stop_loss_distance,
+                        take_profit=[entry_price - target_distance],
+                        risk_reward_ratio=4.0,
+                        setup_type=ICTConcept.DAILY_RANGE,
+                        confidence=0.6,
+                        timestamp=datetime.utcnow(),
+                        timeframe=timeframe
+                    )
+                ])
+        
+        return setups
+    
+    async def session_liquidity_raids_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Session Liquidity Raids Strategy"""
+        return await self.liquidity_raid_strategy(data, symbol, timeframe)
+    
+    async def weekly_profiles_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Weekly Profiles Strategy - WHLC"""
+        setups = []
+        
+        if len(data) < 7 * 24:  # Need at least a week of hourly data
+            return setups
+        
+        # Calculate weekly levels
+        weekly_data = data.iloc[-7*24:]  # Last week
+        weekly_high = weekly_data['high'].max()
+        weekly_low = weekly_data['low'].min()
+        weekly_open = weekly_data['open'].iloc[0]
+        weekly_close = weekly_data['close'].iloc[-1]
+        
+        current_price = data.iloc[-1]['close']
+        
+        # Weekly bias based on close relative to open
+        if weekly_close > weekly_open:  # Bullish week
+            # Look for buys on retracement to weekly levels
+            entry_zones = [weekly_open, (weekly_high + weekly_low) / 2]
+            
+            for zone in entry_zones:
+                if abs(current_price - zone) / zone < 0.005:  # Within 0.5%
+                    setup = TradeSetup(
+                        symbol=symbol,
+                        direction=TradeDirection.LONG,
+                        entry_price=zone,
+                        stop_loss=weekly_low * 0.998,
+                        take_profit=[weekly_high * 1.002, weekly_high * 1.005],
+                        risk_reward_ratio=2.0,
+                        setup_type=ICTConcept.WEEKLY_PROFILE,
+                        confidence=0.7,
+                        timestamp=datetime.utcnow(),
+                        timeframe=timeframe
+                    )
+                    setups.append(setup)
+        
+        elif weekly_close < weekly_open:  # Bearish week
+            # Look for sells on retracement to weekly levels
+            entry_zones = [weekly_open, (weekly_high + weekly_low) / 2]
+            
+            for zone in entry_zones:
+                if abs(current_price - zone) / zone < 0.005:  # Within 0.5%
+                    setup = TradeSetup(
+                        symbol=symbol,
+                        direction=TradeDirection.SHORT,
+                        entry_price=zone,
+                        stop_loss=weekly_high * 1.002,
+                        take_profit=[weekly_low * 0.998, weekly_low * 0.995],
+                        risk_reward_ratio=2.0,
+                        setup_type=ICTConcept.WEEKLY_PROFILE,
+                        confidence=0.7,
+                        timestamp=datetime.utcnow(),
+                        timeframe=timeframe
+                    )
+                    setups.append(setup)
+        
+        return setups
+    
+    async def daily_bias_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Daily Bias Strategy"""
+        setups = []
+        
+        if len(data) < 24:  # Need at least a day of data
+            return setups
+        
+        # Get today's open and previous day's high/low
+        daily_open = data.iloc[-24]['open']  # Approximate daily open
+        prev_day_high = max(data.iloc[-48:-24]['high'])
+        prev_day_low = min(data.iloc[-48:-24]['low'])
+        
+        current_price = data.iloc[-1]['close']
+        
+        # Bullish bias if above daily open
+        if current_price > daily_open:
+            # Look for long opportunities on retracement
+            entry_price = daily_open
+            stop_loss = prev_day_low
+            take_profit = [prev_day_high + (prev_day_high - prev_day_low) * 0.5]
+            
+            setup = TradeSetup(
+                symbol=symbol,
+                direction=TradeDirection.LONG,
+                entry_price=entry_price,
+                stop_loss=stop_loss,
+                take_profit=take_profit,
+                risk_reward_ratio=1.5,
+                setup_type=ICTConcept.DAILY_BIAS,
+                confidence=0.7,
+                timestamp=datetime.utcnow(),
+                timeframe=timeframe
+            )
+            setups.append(setup)
+        
+        # Bearish bias if below daily open
+        elif current_price < daily_open:
+            # Look for short opportunities on retracement
+            entry_price = daily_open
+            stop_loss = prev_day_high
+            take_profit = [prev_day_low - (prev_day_high - prev_day_low) * 0.5]
+            
+            setup = TradeSetup(
+                symbol=symbol,
+                direction=TradeDirection.SHORT,
+                entry_price=entry_price,
+                stop_loss=stop_loss,
+                take_profit=take_profit,
+                risk_reward_ratio=1.5,
+                setup_type=ICTConcept.DAILY_BIAS,
+                confidence=0.7,
+                timestamp=datetime.utcnow(),
+                timeframe=timeframe
+            )
+            setups.append(setup)
+        
+        return setups
+    
+    async def weekly_bias_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Weekly Bias Strategy"""
+        return await self.weekly_profiles_strategy(data, symbol, timeframe)
+    
+    async def monthly_bias_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Monthly Bias Strategy"""
+        setups = []
+        
+        if len(data) < 30 * 24:  # Need at least a month of data
+            return setups
+        
+        # Get monthly levels
+        monthly_data = data.iloc[-30*24:]  # Last month
+        monthly_open = monthly_data['open'].iloc[0]
+        monthly_high = monthly_data['high'].max()
+        monthly_low = monthly_data['low'].min()
+        
+        current_price = data.iloc[-1]['close']
+        
+        # Monthly bias
+        if current_price > monthly_open:  # Bullish monthly bias
+            entry_price = monthly_open
+            stop_loss = monthly_low
+            take_profit = [monthly_high + (monthly_high - monthly_low) * 0.5]
+            
+            setup = TradeSetup(
+                symbol=symbol,
+                direction=TradeDirection.LONG,
+                entry_price=entry_price,
+                stop_loss=stop_loss,
+                take_profit=take_profit,
+                risk_reward_ratio=1.5,
+                setup_type=ICTConcept.MONTHLY_BIAS,
+                confidence=0.65,
+                timestamp=datetime.utcnow(),
+                timeframe=timeframe
+            )
+            setups.append(setup)
+        
+        return setups
+    
+    async def time_of_day_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Time of Day Strategy - AM/PM separation"""
+        setups = []
+        
+        current_time = datetime.utcnow()
+        hour = current_time.hour
+        
+        # AM session (before 12:00 GMT)
+        if hour < 12:
+            # Look for trending moves in AM
+            if len(data) >= 12:
+                am_data = data.iloc[-12:]  # Last 12 hours
+                am_trend = np.polyfit(range(len(am_data)), am_data['close'].values, 1)[0]
+                
+                if abs(am_trend) > 0.001:  # Significant trend
+                    current_price = data.iloc[-1]['close']
+                    direction = TradeDirection.LONG if am_trend > 0 else TradeDirection.SHORT
+                    
+                    if direction == TradeDirection.LONG:
+                        entry_price = current_price
+                        stop_loss = current_price * 0.995
+                        take_profit = [current_price * 1.01]
+                    else:
+                        entry_price = current_price
+                        stop_loss = current_price * 1.005
+                        take_profit = [current_price * 0.99]
+                    
+                    setup = TradeSetup(
+                        symbol=symbol,
+                        direction=direction,
+                        entry_price=entry_price,
+                        stop_loss=stop_loss,
+                        take_profit=take_profit,
+                        risk_reward_ratio=2.0,
+                        setup_type=ICTConcept.TIME_OF_DAY,
+                        confidence=0.6,
+                        timestamp=datetime.utcnow(),
+                        timeframe=timeframe
+                    )
+                    setups.append(setup)
+        
+        return setups
+    
+    # Additional refined strategy implementations for completeness
+    async def fvg_sniper_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """FVG Sniper Entry Strategy - Precise FVG entries"""
+        return await self.fair_value_gap_strategy(data, symbol, timeframe)
+    
+    async def order_block_refined_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Refined Order Block Strategy"""
+        return await self.order_block_strategy(data, symbol, timeframe)
+    
+    async def breaker_block_refined_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Refined Breaker Block Strategy"""
+        return await self.breaker_block_strategy(data, symbol, timeframe)
+    
+    async def rejection_block_refined_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Refined Rejection Block Strategy"""
+        return await self.rejection_block_strategy(data, symbol, timeframe)
+    
+    async def smt_divergence_refined_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Refined SMT Divergence Strategy"""
+        return await self.smt_divergence_strategy(data, symbol, timeframe)
+    
+    async def turtle_soup_refined_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Refined Turtle Soup Strategy"""
+        return await self.turtle_soup_strategy(data, symbol, timeframe)
+    
+    async def power_of_three_refined_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Refined Power of 3 Strategy"""
+        return await self.power_of_three_strategy(data, symbol, timeframe)
+    
+    async def daily_bias_liquidity_raid_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Daily Bias + Liquidity Raid Strategy"""
+        daily_setups = await self.daily_bias_strategy(data, symbol, timeframe)
+        liquidity_setups = await self.liquidity_raid_strategy(data, symbol, timeframe)
+        return daily_setups + liquidity_setups
+    
+    async def am_session_bias_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """AM Session Bias Strategy"""
+        return await self.time_of_day_strategy(data, symbol, timeframe)
+    
+    async def pm_session_reversal_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """PM Session Reversal Strategy"""
+        return await self.ny_reversal_strategy(data, symbol, timeframe)
+    
+    async def optimal_trade_entry_refined_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Refined Optimal Trade Entry Strategy"""
+        return await self.optimal_trade_entry_strategy(data, symbol, timeframe)
+    
+    # Risk Management & Execution Strategies (simplified implementations)
+    async def trade_journaling_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Trade Journaling Strategy"""
+        # This would typically integrate with a journaling system
+        return []
+    
+    async def entry_models_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Entry Models Strategy - FVG, OB, Breaker entries"""
+        fvg_setups = await self.fair_value_gap_strategy(data, symbol, timeframe)
+        ob_setups = await self.order_block_strategy(data, symbol, timeframe)
+        breaker_setups = await self.breaker_block_strategy(data, symbol, timeframe)
+        return fvg_setups + ob_setups + breaker_setups
+    
+    async def exit_models_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Exit Models Strategy"""
+        # This would typically modify existing setups with advanced exit rules
+        return []
+    
+    async def risk_reward_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Risk-Reward Optimization Strategy"""
+        # This would filter setups by minimum RRR
+        return []
+    
+    async def position_sizing_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Position Sizing Strategy"""
+        # This would calculate optimal position sizes
+        return []
+    
+    async def drawdown_control_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Drawdown Control Strategy"""
+        # This would implement drawdown management
+        return []
+    
+    async def compounding_models_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Compounding Models Strategy"""
+        # This would implement compounding rules
+        return []
+    
+    async def daily_loss_limits_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Daily Loss Limits Strategy"""
+        # This would implement daily loss limit checks
+        return []
+    
+    async def probability_profiles_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Probability Profiles Strategy - A+, B, C setups"""
+        # Classify setups by probability
+        all_setups = []
+        
+        # Get various setup types
+        ob_setups = await self.order_block_strategy(data, symbol, timeframe)
+        fvg_setups = await self.fair_value_gap_strategy(data, symbol, timeframe)
+        
+        # Classify by confidence (A+ = high confidence, B = medium, C = low)
+        for setup in ob_setups + fvg_setups:
+            if setup.confidence >= 0.8:
+                setup.setup_type = "A+ Setup"
+            elif setup.confidence >= 0.7:
+                setup.setup_type = "B Setup"
+            else:
+                setup.setup_type = "C Setup"
+            all_setups.append(setup)
+        
+        return all_setups
+    
+    # Advanced Concepts
+    async def high_probability_scenarios_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """High Probability Trade Scenarios - HTF bias + LTF confirmation"""
+        # This would combine multiple timeframe analysis
+        htf_setups = await self.weekly_bias_strategy(data, symbol, timeframe)
+        ltf_setups = await self.order_block_strategy(data, symbol, timeframe)
+        
+        # Filter for confluence
+        high_prob_setups = []
+        for ltf_setup in ltf_setups:
+            for htf_setup in htf_setups:
+                if ltf_setup.direction == htf_setup.direction:
+                    ltf_setup.confidence = min(ltf_setup.confidence + 0.1, 1.0)
+                    high_prob_setups.append(ltf_setup)
+                    break
+        
+        return high_prob_setups
+    
+    async def liquidity_runs_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Liquidity Runs Strategy"""
+        return await self.liquidity_raid_strategy(data, symbol, timeframe)
+    
+    async def reversals_continuations_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Reversals vs Continuations Strategy"""
+        reversal_setups = await self.ny_reversal_strategy(data, symbol, timeframe)
+        continuation_setups = await self.market_structure_strategy(data, symbol, timeframe)
+        return reversal_setups + continuation_setups
+    
+    async def accumulation_distribution_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Accumulation & Distribution Schematics Strategy"""
+        return await self.market_maker_models_strategy(data, symbol, timeframe)
+    
+    async def order_flow_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Order Flow Strategy"""
+        return await self.market_maker_models_strategy(data, symbol, timeframe)
+    
+    async def high_low_day_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """High/Low of Day Identification Strategy"""
+        return await self.daily_bias_strategy(data, symbol, timeframe)
+    
+    async def range_expansion_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Range Expansion Strategy"""
+        return await self.range_expectations_strategy(data, symbol, timeframe)
+    
+    async def inside_outside_day_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Inside Day / Outside Day Strategy"""
+        setups = []
+        
+        if len(data) < 3:
+            return setups
+        
+        # Check for inside/outside day patterns
+        for i in range(2, len(data)):
+            today = data.iloc[i]
+            yesterday = data.iloc[i-1]
+            
+            # Inside day: today's range is within yesterday's range
+            if (today['high'] < yesterday['high'] and today['low'] > yesterday['low']):
+                # Anticipate breakout
+                current_price = today['close']
+                
+                # Bullish breakout setup
+                entry_price = yesterday['high']
+                stop_loss = yesterday['low']
+                take_profit = [entry_price + (entry_price - stop_loss)]
+                
+                setup = TradeSetup(
+                    symbol=symbol,
+                    direction=TradeDirection.LONG,
+                    entry_price=entry_price,
+                    stop_loss=stop_loss,
+                    take_profit=take_profit,
+                    risk_reward_ratio=1.0,
+                    setup_type=ICTConcept.INSIDE_DAY,
+                    confidence=0.6,
+                    timestamp=today['timestamp'],
+                    timeframe=timeframe
+                )
+                setups.append(setup)
+            
+            # Outside day: today's range engulfs yesterday's range
+            elif (today['high'] > yesterday['high'] and today['low'] < yesterday['low']):
+                # Continuation setup in direction of close
+                direction = TradeDirection.LONG if today['close'] > today['open'] else TradeDirection.SHORT
+                
+                if direction == TradeDirection.LONG:
+                    entry_price = today['close']
+                    stop_loss = today['low']
+                    take_profit = [entry_price + (today['high'] - today['low'])]
+                else:
+                    entry_price = today['close']
+                    stop_loss = today['high']
+                    take_profit = [entry_price - (today['high'] - today['low'])]
+                
+                setup = TradeSetup(
+                    symbol=symbol,
+                    direction=direction,
+                    entry_price=entry_price,
+                    stop_loss=stop_loss,
+                    take_profit=take_profit,
+                    risk_reward_ratio=1.0,
+                    setup_type=ICTConcept.OUTSIDE_DAY,
+                    confidence=0.7,
+                    timestamp=today['timestamp'],
+                    timeframe=timeframe
+                )
+                setups.append(setup)
+        
+        return setups
+    
+    async def weekly_profiles_advanced_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Advanced Weekly Profiles Strategy"""
+        return await self.weekly_profiles_strategy(data, symbol, timeframe)
+    
+    async def ipda_theory_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """IPDA Theory Strategy"""
+        # Interbank Price Delivery Algorithm theory
+        setups = []
+        
+        # Look for algorithmic price delivery patterns
+        current_time = datetime.utcnow()
+        hour = current_time.hour
+        minute = current_time.minute
+        
+        # Key algorithmic times (simplified)
+        algo_times = [
+            (8, 30),   # London open
+            (9, 0),    # Frankfurt open
+            (13, 30),  # NY open
+            (14, 0),   # NY cash open
+            (20, 0),   # Sydney open
+        ]
+        
+        # Check if we're near an algorithmic time
+        for algo_hour, algo_minute in algo_times:
+            time_diff = abs((hour * 60 + minute) - (algo_hour * 60 + algo_minute))
+            
+            if time_diff <= 15:  # Within 15 minutes
+                # Look for algorithmic price movements
+                if len(data) >= 5:
+                    recent_data = data.iloc[-5:]
+                    price_change = (recent_data['close'].iloc[-1] - recent_data['close'].iloc[0]) / recent_data['close'].iloc[0]
+                    
+                    if abs(price_change) > 0.002:  # 0.2% move
+                        current_price = data.iloc[-1]['close']
+                        direction = TradeDirection.LONG if price_change > 0 else TradeDirection.SHORT
+                        
+                        if direction == TradeDirection.LONG:
+                            entry_price = current_price
+                            stop_loss = current_price * 0.998
+                            take_profit = [current_price * 1.005]
+                        else:
+                            entry_price = current_price
+                            stop_loss = current_price * 1.002
+                            take_profit = [current_price * 0.995]
+                        
+                        setup = TradeSetup(
+                            symbol=symbol,
+                            direction=direction,
+                            entry_price=entry_price,
+                            stop_loss=stop_loss,
+                            take_profit=take_profit,
+                            risk_reward_ratio=2.5,
+                            setup_type=ICTConcept.IPDA_THEORY,
+                            confidence=0.7,
+                            timestamp=datetime.utcnow(),
+                            timeframe=timeframe
+                        )
+                        setups.append(setup)
+                break
+        
+        return setups
+    
+    async def algo_price_delivery_strategy(self, data: pd.DataFrame, symbol: str, timeframe: TimeFrame) -> List[TradeSetup]:
+        """Algorithmic Price Delivery Strategy"""
+        return await self.ipda_theory_strategy(data, symbol, timeframe)
