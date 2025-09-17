@@ -7,7 +7,7 @@ scikit-learn
 matplotlib
 plotly
 yfinance
-talib-binary
+# talib-binary  # Skip for now due to compatibility issues
 sqlalchemy
 psycopg2-binary
 redis

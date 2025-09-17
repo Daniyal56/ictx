@@ -4,7 +4,7 @@ from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime, timedelta
 from dataclasses import dataclass
 from enum import Enum
-import talib
+# import talib  # Skip for now due to compatibility issues
 
 from app.models import (
     CandleData, OrderBlock, FairValueGap, LiquidityPool,
