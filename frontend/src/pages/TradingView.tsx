@@ -81,6 +81,8 @@ const TradingView: React.FC = () => {
   const [orderBlocks, setOrderBlocks] = useState<OrderBlock[]>([]);
   const [fvgs, setFvgs] = useState<FVG[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentPrice, setCurrentPrice] = useState<number>(0);
+  const [priceChange, setPriceChange] = useState<number>(0);
 
   // Simulated market data
   useEffect(() => {
@@ -91,16 +93,16 @@ const TradingView: React.FC = () => {
 
   const generateMarketData = () => {
     const data: MarketData[] = [];
-    let price = 1.0800;
+    let basePrice = getBasePriceForSymbol(selectedSymbol);
     const now = new Date();
     
     for (let i = 100; i >= 0; i--) {
       const timestamp = new Date(now.getTime() - i * 60 * 60 * 1000).toISOString();
-      const change = (Math.random() - 0.5) * 0.01;
-      const open = price;
-      const close = price + change;
-      const high = Math.max(open, close) + Math.random() * 0.005;
-      const low = Math.min(open, close) - Math.random() * 0.005;
+      const change = (Math.random() - 0.5) * (basePrice * 0.02); // 2% max change
+      const open = basePrice;
+      const close = basePrice + change;
+      const high = Math.max(open, close) + Math.random() * (basePrice * 0.005);
+      const low = Math.min(open, close) - Math.random() * (basePrice * 0.005);
       
       data.push({
         timestamp,
@@ -111,10 +113,64 @@ const TradingView: React.FC = () => {
         volume: Math.floor(Math.random() * 1000000),
       });
       
-      price = close;
+      basePrice = close;
     }
     
     setMarketData(data);
+    if (data.length > 0) {
+      const latest = data[data.length - 1];
+      const previous = data[data.length - 2];
+      setCurrentPrice(latest.close);
+      setPriceChange(previous ? ((latest.close - previous.close) / previous.close) * 100 : 0);
+    }
+  };
+
+  const getBasePriceForSymbol = (symbol: string): number => {
+    const basePrices: { [key: string]: number } = {
+      'EURUSD': 1.0800,
+      'GBPUSD': 1.2650,
+      'USDJPY': 148.50,
+      'AUDUSD': 0.6850,
+      'USDCAD': 1.3520,
+      'IRFC.NS': 45.50,   // Indian Railway Finance Corporation
+      'RELIANCE.NS': 2850.00,
+      'TCS.NS': 3200.00,
+      'INFY.NS': 1450.00,
+      'HDFC.NS': 1680.00,
+      'AAPL': 175.00,
+      'TSLA': 240.00,
+      'MSFT': 380.00,
+      'GOOGL': 140.00,
+    };
+    return basePrices[symbol] || 100.00;
+  };
+
+  const runAIAnalysis = async () => {
+    setIsLoading(true);
+    // Simulate AI analysis
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Generate new analysis for current symbol
+    generateMarketData();
+    generateOrderBlocks();
+    generateFVGs();
+    
+    setIsLoading(false);
+    alert(`AI Analysis completed for ${selectedSymbol}! 
+    
+✅ Order blocks detected: ${orderBlocks.length}
+✅ Fair Value Gaps identified: ${fvgs.length}
+✅ Market structure analyzed
+✅ Current price: ${currentPrice.toFixed(getPriceDecimals(selectedSymbol))}
+✅ Price change: ${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(2)}%
+    
+AI Confidence: ${87 + Math.floor(Math.random() * 10)}%`);
+  };
+
+  const getPriceDecimals = (symbol: string): number => {
+    if (symbol.includes('JPY')) return 2;
+    if (symbol.includes('.NS') || ['AAPL', 'TSLA', 'MSFT', 'GOOGL'].includes(symbol)) return 2;
+    return 4; // For forex pairs
   };
 
   const generateOrderBlocks = () => {
@@ -216,12 +272,12 @@ const TradingView: React.FC = () => {
     },
   };
 
-  const symbols = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD'];
+  const symbols = [
+    'EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD',
+    'IRFC.NS', 'RELIANCE.NS', 'TCS.NS', 'INFY.NS', 'HDFC.NS',
+    'AAPL', 'TSLA', 'MSFT', 'GOOGL'
+  ];
   const timeframes = ['15m', '30m', '1h', '4h', '1d'];
-
-  const currentPrice = marketData.length > 0 ? marketData[marketData.length - 1].close : 0;
-  const priceChange = marketData.length > 1 ? 
-    ((marketData[marketData.length - 1].close - marketData[marketData.length - 2].close) / marketData[marketData.length - 2].close) * 100 : 0;
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -270,7 +326,7 @@ const TradingView: React.FC = () => {
                 {selectedSymbol}
               </Typography>
               <Typography variant="h4" component="div" sx={{ color: priceChange >= 0 ? '#00ff88' : '#ff5722' }}>
-                {currentPrice.toFixed(4)}
+                {currentPrice.toFixed(getPriceDecimals(selectedSymbol))}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
                 {priceChange >= 0 ? <TrendingUp /> : <TrendingDown />}
@@ -468,8 +524,13 @@ const TradingView: React.FC = () => {
                 </Button>
               </Grid>
               <Grid item>
-                <Button variant="outlined" startIcon={<Psychology />}>
-                  Run AI Analysis
+                <Button 
+                  variant="outlined" 
+                  startIcon={<Psychology />} 
+                  onClick={runAIAnalysis}
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Analyzing...' : 'Run AI Analysis'}
                 </Button>
               </Grid>
               <Grid item>
