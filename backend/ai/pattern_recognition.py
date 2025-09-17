@@ -1027,98 +1027,15 @@ class PatternRecognizer:
                 
                 return data
             else:
-                # Fallback to mock data if real data unavailable
-                return self._generate_mock_data(symbol, timeframe, periods)
+                # Return error for invalid symbols rather than mock data
+                raise ValueError(f"No market data available for {symbol}. Please verify symbol format.")
                 
         except Exception as e:
             print(f"Error fetching market data for {symbol}: {str(e)}")
-            # Fallback to mock data
-            return self._generate_mock_data(symbol, timeframe, periods)
+            # Return error instead of mock data
+            raise ValueError(f"Cannot fetch real market data for {symbol}: {str(e)}")
     
-    def _generate_mock_data(self, symbol: str, timeframe: TimeFrame, periods: int) -> pd.DataFrame:
-        """Generate sophisticated mock data as fallback"""
-        dates = pd.date_range(end=datetime.utcnow(), periods=periods, freq='H')
-        
-        # Use symbol-specific seed for reproducible data
-        np.random.seed(hash(symbol) % 1000)
-        
-        # Base prices for different symbols
-        base_prices = {
-            'EURUSD': 1.1000,
-            'GBPUSD': 1.2500,
-            'USDJPY': 110.00,
-            'AUDUSD': 0.7500,
-            'AAPL': 150.00,
-            'MSFT': 300.00,
-            'GOOGL': 2500.00,
-            'TSLA': 800.00
-        }
-        
-        base_price = base_prices.get(symbol, 100.00)
-        
-        # Generate realistic price movements with trends and patterns
-        prices = []
-        current_price = base_price
-        
-        for i in range(periods):
-            # Add multiple timeframe influences
-            long_trend = 0.002 * np.sin(i / periods * 2 * np.pi)  # Long cycle
-            medium_trend = 0.001 * np.sin(i / periods * 8 * np.pi)  # Medium cycle
-            noise = np.random.normal(0, 0.003)  # Random noise
-            
-            # Mean reversion component
-            reversion = -0.05 * (current_price - base_price) / base_price
-            
-            # Volatility clustering
-            vol_factor = 1 + 0.5 * abs(np.sin(i / 20))
-            
-            change = (long_trend + medium_trend + reversion) + noise * vol_factor
-            current_price = current_price * (1 + change)
-            prices.append(max(current_price, base_price * 0.5))  # Floor at 50% of base
-        
-        # Generate realistic OHLC data
-        data = []
-        for i, price in enumerate(prices):
-            # Calculate realistic daily range
-            if symbol.endswith('USD') or 'USD' in symbol:
-                daily_range_pct = np.random.uniform(0.005, 0.025)  # 0.5-2.5% for forex
-            else:
-                daily_range_pct = np.random.uniform(0.01, 0.05)   # 1-5% for stocks
-            
-            daily_range = price * daily_range_pct
-            
-            # Generate OHLC with proper relationships
-            open_offset = np.random.uniform(-daily_range/4, daily_range/4)
-            open_price = price + open_offset
-            
-            high_extension = np.random.uniform(0, daily_range/2)
-            low_extension = np.random.uniform(0, daily_range/2)
-            
-            high_price = max(open_price, price) + high_extension
-            low_price = min(open_price, price) - low_extension
-            
-            close_offset = np.random.uniform(-daily_range/3, daily_range/3)
-            close_price = price + close_offset
-            
-            # Ensure close is within high/low range
-            close_price = max(low_price, min(high_price, close_price))
-            
-            # Generate volume with some correlation to price movement
-            base_volume = 50000
-            price_movement = abs(close_price - open_price) / open_price
-            volume_multiplier = 1 + price_movement * 5  # Higher volume on big moves
-            volume = int(base_volume * volume_multiplier * np.random.uniform(0.5, 2.0))
-            
-            data.append({
-                'timestamp': dates[i],
-                'open': open_price,
-                'high': high_price,
-                'low': low_price,
-                'close': close_price,
-                'volume': volume
-            })
-        
-        return pd.DataFrame(data)
+
 
     # Additional pattern detection methods for comprehensive ICT coverage
     

@@ -213,8 +213,8 @@ async def get_economic_calendar(
         events = await _fetch_real_economic_events(date, importance)
         
         if not events:
-            # Fallback to realistic economic events based on current market conditions
-            events = _generate_realistic_economic_events(date, importance)
+            # Return empty events if no real data available
+            events = []
         
         # Filter by importance
         if importance != "all":
@@ -229,8 +229,8 @@ async def get_economic_calendar(
         }
         
     except Exception as e:
-        # Fallback to realistic events on error
-        events = _generate_realistic_economic_events(date, importance)
+        # Return empty events on error instead of synthetic data
+        events = []
         if importance != "all":
             events = [e for e in events if e["importance"] == importance]
         
@@ -428,22 +428,5 @@ def _generate_realistic_economic_events(date, importance):
                 "impact": "bullish"
             }
         ])
-    
-    # Add realistic time variations
-    import random
-    random.seed(hash(str(date)))
-    
-    for event in events:
-        # Add slight time variations
-        base_hour, base_minute = event["time"].split(":")
-        minute_variation = random.randint(-5, 5)
-        new_minute = max(0, min(59, int(base_minute) + minute_variation))
-        event["time"] = f"{base_hour}:{new_minute:02d}"
-        
-        # Add market impact assessment
-        if event["impact"] == "neutral":
-            event["expected_volatility"] = "low"
-        else:
-            event["expected_volatility"] = "medium" if event["importance"] == "medium" else "high"
     
     return events

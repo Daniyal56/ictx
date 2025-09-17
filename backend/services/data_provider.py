@@ -92,52 +92,44 @@ class RealDataProvider:
         return None
     
     async def _get_fallback_data(self, symbol: str) -> Dict[str, Any]:
-        """Fallback to realistic simulated data with disclaimer"""
-        print(f"Using simulated data for {symbol} - Real API integration required for production")
-        
-        # Generate realistic market data based on symbol type
-        base_price = self._get_realistic_base_price(symbol)
-        current_time = datetime.utcnow()
-        
-        # Generate OHLCV data for last 100 periods
-        ohlcv_data = []
-        price = base_price
-        
-        for i in range(100, 0, -1):
-            timestamp = current_time - timedelta(minutes=i)
+        """Enhanced fallback using yfinance for real market data"""
+        try:
+            import yfinance as yf
+            ticker = yf.Ticker(symbol)
+            hist = ticker.history(period="5d", interval="1m")
             
-            # Realistic price movement (0.1% to 0.5% per minute)
-            change_percent = (np.random.random() - 0.5) * 0.01  # ±0.5%
-            open_price = price
-            close_price = price * (1 + change_percent)
+            if hist.empty:
+                raise Exception(f"No data available for symbol {symbol}")
             
-            # Calculate high/low with realistic spreads
-            spread = price * 0.001  # 0.1% spread
-            high_price = max(open_price, close_price) + spread * np.random.random()
-            low_price = min(open_price, close_price) - spread * np.random.random()
+            current_time = datetime.utcnow()
+            ohlcv_data = []
             
-            volume = int(np.random.exponential(100000))  # Realistic volume distribution
+            for timestamp, row in hist.iterrows():
+                ohlcv_data.append({
+                    'timestamp': timestamp.isoformat(),
+                    'open': round(float(row['Open']), self._get_price_decimals(symbol)),
+                    'high': round(float(row['High']), self._get_price_decimals(symbol)),
+                    'low': round(float(row['Low']), self._get_price_decimals(symbol)),
+                    'close': round(float(row['Close']), self._get_price_decimals(symbol)),
+                    'volume': int(row['Volume'])
+                })
             
-            ohlcv_data.append({
-                'timestamp': timestamp.isoformat(),
-                'open': round(open_price, self._get_price_decimals(symbol)),
-                'high': round(high_price, self._get_price_decimals(symbol)),
-                'low': round(low_price, self._get_price_decimals(symbol)),
-                'close': round(close_price, self._get_price_decimals(symbol)),
-                'volume': volume
-            })
+            if not ohlcv_data:
+                raise Exception(f"No valid data points for {symbol}")
             
-            price = close_price
-        
-        return {
-            'symbol': symbol,
-            'data': ohlcv_data,
-            'current_price': ohlcv_data[-1]['close'],
-            'price_change_24h': ((ohlcv_data[-1]['close'] - ohlcv_data[0]['close']) / ohlcv_data[0]['close']) * 100,
-            'data_source': 'simulated',
-            'timestamp': current_time.isoformat(),
-            'disclaimer': 'Simulated data - Connect real API for production use'
-        }
+            return {
+                'symbol': symbol,
+                'data': ohlcv_data,
+                'current_price': ohlcv_data[-1]['close'],
+                'price_change_24h': ((ohlcv_data[-1]['close'] - ohlcv_data[0]['close']) / ohlcv_data[0]['close']) * 100,
+                'data_source': 'yfinance',
+                'timestamp': current_time.isoformat(),
+                'disclaimer': 'Real market data via yfinance'
+            }
+            
+        except Exception as e:
+            print(f"Real data fallback failed for {symbol}: {e}")
+            raise Exception(f"Unable to fetch real market data for {symbol}. Please verify symbol format and connectivity.")
     
     def _format_symbol_for_alpha_vantage(self, symbol: str) -> str:
         """Format symbol for Alpha Vantage API"""
